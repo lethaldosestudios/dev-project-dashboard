@@ -2,11 +2,14 @@
 
 ## 1. Mini PRD
 
+**Origin**
+This project started after reading a dev.to article describing a Chrome-extension tool (STACKFOLO-style "new tab" project dashboards). Porter never used that extension, but recognized the same underlying problem: scattered links, notes, and GitHub activity across active projects with no owned, extendable system.
+
 **Problem**
-Porter runs multiple active dev/design projects (Lethal Dose Studios, personal tools, client work) and currently tracks links, notes, and GitHub activity across scattered bookmarks and a Chrome extension (STACKFOLO) with no data ownership and no automation hooks.
+Porter runs multiple active dev/design projects (Lethal Dose Studios, personal tools, client work) and currently tracks links, notes, and GitHub activity across scattered bookmarks with no single owned system and no automation hooks.
 
 **Goal**
-A self-hosted, single-user dashboard that answers one question fast: *what needs my attention across my projects right now?* It replaces the Chrome-extension workflow with an owned, extendable system for capturing resources, notes, and activity per project.
+A self-hosted, single-user dashboard that answers one question fast: *what needs my attention across my projects right now?* It's a fully owned, extendable alternative to closed browser-extension tools — built on infrastructure Porter controls end to end.
 
 **Primary user**
 Porter LaForce (solo use, single-tenant).
@@ -23,7 +26,7 @@ Porter LaForce (solo use, single-tenant).
 - Manual resource capture (URL, title, tags, note)
 - Dark mode by default
 - "Needs attention" / stale-project flag
-- D1 schema + CRUD API routes
+- D1 schema + working CRUD API routes
 - Deploy to Cloudflare Workers
 
 **Explicitly out of MVP**
@@ -38,7 +41,7 @@ Porter LaForce (solo use, single-tenant).
 - Third-party SaaS dependency for core data
 
 **Success criteria**
-- Daily use replaces the old Chrome extension within 2 weeks of MVP deploy
+- Daily use becomes the default workflow within 2 weeks of MVP deploy
 - Capture flow takes under 10 seconds from any page
 - $0–1/month infra cost maintained
 
@@ -94,7 +97,7 @@ dev-project-dashboard/
 │   │   ├── search-bar.tsx
 │   │   └── attention-panel.tsx
 │   ├── lib/
-│   │   ├── db.ts                   # D1 client helper
+│   │   ├── db.ts                   # D1 client + query helpers
 │   │   ├── github.ts
 │   │   ├── search.ts
 │   │   └── utils.ts
@@ -131,9 +134,21 @@ pnpm build
 pnpm dlx wrangler deploy
 ```
 
-## 6. Roadmap Checklist
+## 6. Phase 1 Status — Functional
 
-- [ ] Phase 1: Core CRUD, search, dark mode, attention panel
+Phase 1 CRUD is now wired to D1 (no longer stubs):
+- `GET/POST /api/projects` — list + create projects
+- `GET/PATCH /api/projects/:id` — fetch + update a single project
+- `GET/POST /api/resources` — list (optionally by project) + create resources
+- `PATCH /api/resources/:id` — update a resource
+- `GET /api/search` — search across projects, notes, and resources
+- `POST /api/capture` — quick-capture endpoint (normalizes + dedupes URLs)
+
+Still stubbed (later phases): `sync/github`, `sync/deploys`, AI tagging.
+
+## 7. Roadmap Checklist
+
+- [x] Phase 1: Core CRUD, search, dark mode, attention panel
 - [ ] Phase 2: GitHub sync, stale flag
 - [ ] Phase 3: Bookmarklet capture
 - [ ] Phase 4: AI tagging/summarization

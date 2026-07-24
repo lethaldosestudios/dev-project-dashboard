@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "wrangler deploy"
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static"
   },
   "dependencies": {
     "next": "14.2.5",
@@ -24,6 +25,7 @@
     "@types/node": "20.14.15",
     "autoprefixer": "10.4.20",
     "postcss": "8.4.41",
-    "wrangler": "3.72.0"
+    "wrangler": "3.72.0",
+    "@cloudflare/next-on-pages": "1.13.5"
   }
 }

@@ -7,30 +7,30 @@ export interface Project {
   status: "active" | "paused" | "archived";
   priority: "low" | "normal" | "high";
   stack?: string;
-  createdAt: string;
-  updatedAt: string;
-  lastActivityAt?: string;
+  created_at: string;
+  updated_at: string;
+  last_activity_at?: string;
 }
 
 export interface Resource {
   id: string;
-  projectId?: string;
+  project_id?: string;
   url: string;
-  normalizedUrl: string;
+  normalized_url: string;
   title?: string;
   summary?: string;
   note?: string;
   domain?: string;
-  contentType?: string;
-  savedVia: "manual" | "bookmarklet" | "extension" | "ai";
-  createdAt: string;
+  content_type?: string;
+  saved_via: "manual" | "bookmarklet" | "extension" | "ai";
+  created_at: string;
 }
 
 export interface Note {
   id: string;
-  projectId: string;
+  project_id: string;
   title?: string;
-  contentMd: string;
-  noteType: string;
-  updatedAt: string;
+  content_md: string;
+  note_type: string;
+  updated_at: string;
 }
