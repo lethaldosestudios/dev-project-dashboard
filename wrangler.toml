@@ -1,0 +1,12 @@
+name = "dev-project-dashboard"
+main = ".vercel/output/static/_worker.js/index.js"
+compatibility_date = "2026-07-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "dev-project-dashboard-db"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[vars]
+ENVIRONMENT = "production"
