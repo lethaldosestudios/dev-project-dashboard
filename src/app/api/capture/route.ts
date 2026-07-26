@@ -6,7 +6,7 @@ import { normalizeUrl, extractDomain } from "@/lib/utils";
 export const runtime = "edge";
 
 export async function POST(req: Request) {
-  const body = await req.json();
+  const body = (await req.json()) as any;
   const { url, title, projectId } = body;
 
   if (!url || typeof url !== "string") {

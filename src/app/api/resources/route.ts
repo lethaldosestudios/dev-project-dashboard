@@ -19,7 +19,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const body = await req.json();
+  const body = (await req.json()) as any;
   const { url, title, note, projectId, savedVia = "manual" } = body;
 
   if (!url || typeof url !== "string") {

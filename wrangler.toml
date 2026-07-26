@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "dev-project-dashboard-db"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "fcf1841b-58d2-4d76-b734-8371d546f8c2"
 
 [vars]
 ENVIRONMENT = "production"

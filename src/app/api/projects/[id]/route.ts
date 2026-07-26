@@ -35,7 +35,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 }
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const body = await req.json();
+  const body = (await req.json()) as any;
   const db = getDb();
 
   const allowed = ["name", "description", "status", "priority", "stack", "last_activity_at"] as const;

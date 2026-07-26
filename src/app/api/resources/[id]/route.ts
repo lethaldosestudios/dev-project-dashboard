@@ -5,7 +5,7 @@ import { getDb, nowIso } from "@/lib/db";
 export const runtime = "edge";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const body = await req.json();
+  const body = (await req.json()) as any;
   const db = getDb();
 
   const allowed = ["title", "summary", "note", "project_id", "content_type"] as const;
