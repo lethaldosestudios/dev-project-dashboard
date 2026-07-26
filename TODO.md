@@ -39,6 +39,19 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - **Status:** Documented and verified
 - **Details:** The local database must be initialized with `pnpm dlx wrangler d1 execute dev-project-dashboard-db --local --file=./db/schema.sql` before opening D1-backed pages.
 
+### 4. Missing PostCSS config — Tailwind not compiling
+- **Status:** Open — 2026-08-06
+- **Details:** No `postcss.config.mjs`/`.js`/`.cjs` exists in the repo, despite `tailwindcss` and `postcss` being installed and `globals.css` containing valid `@tailwind` directives. Result: Tailwind never runs, and the app renders as unstyled HTML.
+- **Fix:** Add `postcss.config.mjs` with `tailwindcss` and `autoprefixer` plugins; confirm `autoprefixer` is a dependency.
+
 ## Deferred Work Log
 
-Record future issues here with status, date, details, why they were deferred, and the eventual fix or decision.
+_(Move items here once fixed, with the resolution date and a one-line summary of what changed.)_
+
+---
+
+## How to use this file
+- Add a new numbered entry any time a fix is consciously deferred during setup, build, deployment, or feature work.
+- Include: status, date logged, details, why deferred, and what "fix later" looks like.
+- When resolved, move the entry to the Resolved section with the resolution date and a short summary of the fix.
+- Keep related infrastructure issues grouped when they point to the same eventual migration path.
