@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 // src/app/projects/[slug]/page.tsx
 export default function ProjectDetailPage({ params }: { params: { slug: string } }) {
   return (
