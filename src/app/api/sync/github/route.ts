@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 // src/app/api/sync/github/route.ts
 import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";

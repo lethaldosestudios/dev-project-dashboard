@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 // src/app/projects/[slug]/page.tsx
 import { getDb } from "@/lib/db";
 import { GlassCard } from "@/components/ui/glass-card";
