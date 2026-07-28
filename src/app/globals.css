@@ -1,3 +1,96 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom Glassmorphism Utilities */
+
+/* Glass card base styles */
+@layer components {
+  /* Glass Card - Elevated with blur and glow */
+  .glass-card {
+    @apply bg-oled-900/30 backdrop-blur-xl rounded-xl border border-glass-border/10;
+  }
+
+  /* Liquid Glass Button */
+  .liquid-btn {
+    @apply relative overflow-hidden rounded-lg bg-liquid-base text-white 
+           border border-white/10 transition-all duration-300 
+           hover:bg-liquid-hover hover:border-white/20 hover:shadow-glow-md
+           active:bg-liquid-active active:scale-[0.98];
+  }
+
+  /* Liquid Glass Button - Subtle */
+  .liquid-btn-subtle {
+    @apply relative overflow-hidden rounded-lg bg-glass-primary/50 text-neutral-100 
+           border border-white/5 transition-all duration-300
+           hover:bg-glass-primary/70 hover:border-white/10 hover:shadow-glow
+           active:bg-glass-primary active:scale-[0.98];
+  }
+
+  /* Glow Input */
+  .glow-input {
+    @apply bg-oled-800/50 border border-white/5 rounded-lg px-4 py-2 text-white
+           placeholder:text-neutral-500 focus:outline-none
+           focus:border-white/20 focus:shadow-glow focus:bg-oled-800/70
+           transition-all duration-300;
+  }
+
+  /* Glass Panel */
+  .glass-panel {
+    @apply bg-oled-900/20 backdrop-blur-lg rounded-xl border border-white/5;
+  }
+
+  /* Elevated Container */
+  .elevated-container {
+    @apply bg-oled-900/40 backdrop-blur-md rounded-2xl border border-white/5
+           shadow-elevated;
+  }
+
+  /* Glow Text */
+  .glow-text {
+    @apply text-white drop-shadow-glow;
+  }
+
+  /* Subtle Divider */
+  .divider-subtle {
+    @apply border-t border-white/5 my-6;
+  }
+}
+
+/* Custom drop shadows for text */
+@layer utilities {
+  .drop-shadow-glow {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  }
+  .drop-shadow-glow-md {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+  }
+  .drop-shadow-glow-lg {
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Custom scrollbar for OLED theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ffffff1a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ffffff26;
+}
+
+/* Selection color */
+::selection {
+  background: #ffffff26;
+  color: #ffffff;
+}
