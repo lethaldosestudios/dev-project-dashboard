@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { LiquidButton } from "./ui/liquid-button";
 import type { SyncRun } from "@/types";
 
 interface SyncResult {
@@ -24,13 +25,10 @@ export function GitHubSyncStatus({ lastSync }: GitHubSyncStatusProps) {
     setError(null);
 
     try {
-      // In production, get token from secure storage
-      // For now, this will fail without a token - that's expected
       const response = await fetch("/api/sync/github", {
         method: "POST",
         headers: {
           // Token should be provided via environment or secure input
-          // "x-github-token": process.env.GITHUB_TOKEN || ""
         },
       });
 
@@ -62,66 +60,63 @@ export function GitHubSyncStatus({ lastSync }: GitHubSyncStatusProps) {
 
   if (!lastSync && !isSyncing) {
     return (
-      <button
+      <LiquidButton 
+        variant="secondary" 
+        size="sm" 
         onClick={handleSync}
-        className="flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
         disabled={isSyncing}
       >
         <SyncIcon className="w-4 h-4" />
-        <span>Sync GitHub</span>
-      </button>
+        Sync GitHub
+      </LiquidButton>
     );
   }
 
   if (isSyncing) {
     return (
-      <div className="flex items-center gap-2 text-sm text-neutral-400">
+      <LiquidButton variant="secondary" size="sm" disabled>
         <SyncIcon className="w-4 h-4 animate-spin" />
-        <span>Syncing...</span>
-      </div>
+        Syncing...
+      </LiquidButton>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 text-sm text-red-400">
+      <LiquidButton variant="secondary" size="sm" onClick={handleSync}>
         <SyncIcon className="w-4 h-4" />
-        <span>{error}</span>
-      </div>
+        {error}
+      </LiquidButton>
     );
   }
 
   if (syncStatus) {
-    const statusColor = 
-      syncStatus.status === "completed" 
-        ? "text-green-400" 
-        : syncStatus.status === "failed" 
-          ? "text-red-400" 
-          : "text-neutral-400";
-
+    const isSuccess = syncStatus.status === "completed";
+    
     return (
-      <button
+      <LiquidButton 
+        variant={isSuccess ? "primary" : "secondary"} 
+        size="sm" 
         onClick={handleSync}
-        className="flex items-center gap-2 text-sm hover:text-white transition-colors"
         disabled={isSyncing}
       >
-        <SyncIcon className={`w-4 h-4 ${statusColor}`} />
-        <span className={statusColor}>
+        <SyncIcon className={`w-4 h-4 ${isSuccess ? "text-accent-primary" : "text-white/70"}`} />
+        <span>
           {syncStatus.status === "completed" 
             ? `Synced ${formatTimeAgo(syncStatus.started_at)}`
             : syncStatus.status}
         </span>
         {syncStatus.records_processed > 0 && (
-          <span className="text-xs text-neutral-500">+{syncStatus.records_processed}</span>
+          <span className="text-xs text-white/50 ml-1">+{syncStatus.records_processed}</span>
         )}
-      </button>
+      </LiquidButton>
     );
   }
 
   return null;
 }
 
-// Simple sync icon component
+// Sync Icon Component
 function SyncIcon({ className }: { className?: string }) {
   return (
     <svg 

@@ -3,6 +3,9 @@ import { getDb } from "@/lib/db";
 import { ProjectCard } from "@/components/project-card";
 import { AttentionPanel } from "@/components/attention-panel";
 import { GitHubSyncStatus } from "@/components/github-sync-status";
+import { GlassCard } from "@/components/ui/glass-card";
+import { LiquidButton } from "@/components/ui/liquid-button";
+import Link from "next/link";
 import type { Project } from "@/types";
 
 export const runtime = "edge";
@@ -57,33 +60,89 @@ export default async function HomePage() {
   const { projects, stale, activityCounts, lastSync } = await getHomeData();
 
   return (
-    <main className="p-8 space-y-8">
-      <div className="flex justify-between items-start">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <GitHubSyncStatus lastSync={lastSync} />
+    <main className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-1">Dashboard</h1>
+          <p className="text-white/50 text-sm">What needs your attention today?</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <GitHubSyncStatus lastSync={lastSync} />
+          <LiquidButton variant="primary" size="sm">
+            <PlusIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">New Project</span>
+          </LiquidButton>
+        </div>
       </div>
 
+      {/* Stats Overview */}
+      <GlassCard variant="elevated" className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6">
+        <StatItem label="Total Projects" value={projects.length.toString()} icon="📊" />
+        <StatItem label="Active" value={projects.filter(p => p.status === "active").length.toString()} icon="✨" />
+        <StatItem label="Needs Attention" value={stale.length.toString()} icon="⚠️" />
+        <StatItem label="Recent Activity" value={Object.values(activityCounts).reduce((a, b) => a + b, 0).toString()} icon="🔥" />
+      </GlassCard>
+
+      {/* Needs Attention Section */}
       <section>
-        <h2 className="text-lg font-medium mb-2">Needs attention</h2>
+        <h2 className="text-lg font-medium text-white mb-4">
+          Needs attention
+        </h2>
         <AttentionPanel staleProjects={stale} />
       </section>
 
+      {/* Active Projects Section */}
       <section>
-        <h2 className="text-lg font-medium mb-2">Active projects</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-medium text-white">Active projects</h2>
+          <Link href="/projects" className="text-sm text-accent-primary/70 hover:text-accent-primary">
+            View all →
+          </Link>
+        </div>
+        
         {projects.length === 0 ? (
-          <p className="text-sm text-neutral-400">No projects yet. Add your first one to get started.</p>
+          <GlassCard variant="bordered" className="text-center py-12">
+            <div className="text-4xl mb-4">🌌</div>
+            <p className="text-white/60">No projects yet.</p>
+            <p className="text-white/40 text-sm mt-1">Add your first one to get started.</p>
+          </GlassCard>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((p) => (
-              <ProjectCard 
-                key={p.id} 
-                project={p} 
-                activityCount={activityCounts[p.id] ?? 0}
-              />
+              <ProjectCard key={p.id} project={p} activityCount={activityCounts[p.id] ?? 0} />
             ))}
           </div>
         )}
       </section>
     </main>
+  );
+}
+
+function StatItem({ label, value, icon }: { label: string; value: string; icon: string }) {
+  return (
+    <div className="text-center">
+      <div className="text-2xl mb-1">{icon}</div>
+      <div className="text-xl font-semibold text-white">{value}</div>
+      <div className="text-xs text-white/50">{label}</div>
+    </div>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg 
+      className={className} 
+      fill="none" 
+      stroke="currentColor" 
+      viewBox="0 0 24 24"
+    >
+      <path 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        strokeWidth={2} 
+        d="M12 4v16m8-8H4" 
+      />
+    </svg>
   );
 }

@@ -1,14 +1,25 @@
+// src/app/layout.tsx
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-export const metadata = {
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
   title: "Dev Project Dashboard",
-  description: "Personal command center for active dev projects",
+  description: "A self-hosted dashboard for tracking your development projects",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-neutral-950 text-neutral-100 min-h-screen">{children}</body>
+    <html lang="en">
+      <body className={`${inter.className} bg-background text-foreground min-h-screen`}>
+        {children}
+      </body>
     </html>
   );
 }

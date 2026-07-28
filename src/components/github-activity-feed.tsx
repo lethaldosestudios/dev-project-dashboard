@@ -1,4 +1,5 @@
 // src/components/github-activity-feed.tsx
+import { GlassCard } from "./ui/glass-card";
 import type { GitHubActivity } from "@/types";
 
 interface GitHubActivityFeedProps {
@@ -8,9 +9,11 @@ interface GitHubActivityFeedProps {
 export function GitHubActivityFeed({ activities }: GitHubActivityFeedProps) {
   if (activities.length === 0) {
     return (
-      <div className="rounded-lg border border-neutral-800 p-4 text-sm text-neutral-400">
-        No GitHub activity yet.
-      </div>
+      <GlassCard variant="bordered" className="text-center py-8">
+        <div className="text-3xl mb-2">🐙</div>
+        <p className="text-white/60 text-sm">No GitHub activity yet.</p>
+        <p className="text-white/40 text-sm mt-1">Sync your repositories to see updates.</p>
+      </GlassCard>
     );
   }
 
@@ -36,75 +39,63 @@ function ActivityItem({ activity }: { activity: GitHubActivity }) {
     return date.toLocaleDateString();
   };
 
-  const getEventIcon = (type: string) => {
+  const getEventConfig = (type: string) => {
     switch (type) {
       case "PushEvent":
-        return "↑";
+        return { icon: "↑", label: "Pushed", color: "text-accent-emerald" };
       case "IssuesEvent":
       case "IssueCommentEvent":
-        return "🐛";
+        return { icon: "🐛", label: "Issue", color: "text-accent-red" };
       case "PullRequestEvent":
-        return "📥";
+      case "PullRequestReviewEvent":
+      case "PullRequestReviewCommentEvent":
+        return { icon: "📥", label: "Pull request", color: "text-accent-purple" };
       case "CreateEvent":
-        return "+";
+        return { icon: "+", label: "Created", color: "text-accent-cyan" };
       case "DeleteEvent":
-        return "-";
+        return { icon: "-", label: "Deleted", color: "text-white/60" };
       default:
-        return "•";
+        return { icon: "•", label: type, color: "text-white/70" };
     }
   };
 
-  const getEventLabel = (type: string) => {
-    switch (type) {
-      case "PushEvent":
-        return "Pushed";
-      case "IssuesEvent":
-        return "Issue";
-      case "IssueCommentEvent":
-        return "Commented";
-      case "PullRequestEvent":
-        return "Pull request";
-      case "CreateEvent":
-        return "Created";
-      case "DeleteEvent":
-        return "Deleted";
-      default:
-        return type;
-    }
-  };
+  const config = getEventConfig(activity.event_type);
 
   return (
-    <div className="rounded-lg border border-neutral-800 p-4 hover:border-neutral-700 transition-colors">
+    <GlassCard 
+      variant="elevated" 
+      className="p-4 hover:border-white/20 transition-all"
+    >
       <div className="flex items-start gap-3">
-        <span className="text-neutral-500 text-lg">{getEventIcon(activity.event_type)}</span>
+        <span className={`text-xl ${config.color}`}>{config.icon}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
-            <span className="font-medium text-sm">{getEventLabel(activity.event_type)}</span>
+            <span className="font-medium text-white text-sm">{config.label}</span>
             {activity.author && (
-              <span className="text-xs text-neutral-400">by {activity.author}</span>
+              <span className="text-xs text-white/50">by {activity.author}</span>
             )}
-            <span className="text-xs text-neutral-500 ml-auto">
+            <span className="text-xs text-white/40 ml-auto">
               {formatDate(activity.occurred_at)}
             </span>
           </div>
           {activity.title && (
-            <p className="text-sm text-neutral-300 mt-1">{activity.title}</p>
+            <p className="text-sm text-white/80 mt-1">{activity.title}</p>
           )}
           {activity.commit_sha && (
-            <code className="text-xs text-neutral-500 mt-1 block">{activity.commit_sha.slice(0, 7)}</code>
+            <code className="text-xs text-white/40 mt-1 block">{activity.commit_sha.slice(0, 7)}</code>
           )}
           {activity.url && (
             <a 
               href={activity.url} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-xs text-blue-400 hover:text-blue-300 mt-1 inline-block"
+              className="text-xs text-accent-primary/70 hover:text-accent-primary mt-1 inline-block"
             >
-              View on GitHub
+              View on GitHub →
             </a>
           )}
         </div>
       </div>
-    </div>
+    </GlassCard>
   );
 }
