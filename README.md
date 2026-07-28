@@ -85,9 +85,11 @@ dev-project-dashboard/
 │   │   │   ├── resources/[id]/route.ts
 │   │   │   ├── search/route.ts
 │   │   │   ├── capture/route.ts
-│   │   │   ├── sync/github/route.ts
-│   │   │   └── sync/deploys/route.ts
-│   │   ├── layout.tsx
+│   │   │   ├── notes/route.ts
+│   │   │   └── sync/
+│   │   │       ├── github/route.ts
+│   │   │       └── deploys/route.ts
+│   │   └── layout.tsx
 │   │   └── globals.css
 │   ├── components/
 │   │   ├── ui/                     # shadcn components
@@ -95,11 +97,13 @@ dev-project-dashboard/
 │   │   ├── resource-list.tsx
 │   │   ├── notes-editor.tsx
 │   │   ├── search-bar.tsx
-│   │   └── attention-panel.tsx
+│   │   ├── attention-panel.tsx
+│   │   ├── github-sync-status.tsx
+│   │   ├── github-activity-feed.tsx
+│   │   └── project-header.tsx
 │   ├── lib/
 │   │   ├── db.ts                   # D1 client + query helpers
-│   │   ├── github.ts
-│   │   ├── search.ts
+│   │   ├── github.ts               # GitHub API client
 │   │   └── utils.ts
 │   └── types/
 │       └── index.ts
@@ -113,7 +117,6 @@ dev-project-dashboard/
 ├── next.config.mjs
 ├── tailwind.config.ts
 ├── tsconfig.json
-├── package.json
 └── README.md
 ```
 
@@ -144,12 +147,26 @@ Phase 1 CRUD is now wired to D1 (no longer stubs):
 - `GET /api/search` — search across projects, notes, and resources
 - `POST /api/capture` — quick-capture endpoint (normalizes + dedupes URLs)
 
-Still stubbed (later phases): `sync/github`, `sync/deploys`, AI tagging.
+## 7. Phase 2 Status — Functional
 
-## 7. Roadmap Checklist
+GitHub sync and stale detection is now implemented:
+- `POST /api/sync/github` — sync GitHub activity for all user repos, update project last_activity_at
+- `GET /api/sync/github` — get sync history
+- `POST /api/notes` — create notes for projects
+- GitHub activity feed on project detail pages
+- Stale project detection (14+ days without activity)
+- Activity count badges on project cards
+- Sync status indicator on dashboard
+
+To use GitHub sync:
+1. Create a GitHub Personal Access Token with `repo` scope
+2. Pass it in the `x-github-token` header when calling `POST /api/sync/github`
+3. Link projects to repos by setting `github_repo` field to "owner/repo" format
+
+## 8. Roadmap Checklist
 
 - [x] Phase 1: Core CRUD, search, dark mode, attention panel
-- [ ] Phase 2: GitHub sync, stale flag
+- [x] Phase 2: GitHub sync, stale flag
 - [ ] Phase 3: Bookmarklet capture
 - [ ] Phase 4: AI tagging/summarization
 - [ ] Phase 5: Polish (Figma panel, reorder, deploy widgets)
