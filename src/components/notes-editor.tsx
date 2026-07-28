@@ -1,10 +1,12 @@
 // src/components/notes-editor.tsx
+import { Textarea } from "@/components/ui/textarea";
+
 export function NotesEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <textarea
-      className="w-full min-h-[200px] bg-neutral-900 border border-neutral-800 rounded-md p-3 text-sm"
+    <Textarea
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      className="min-h-[200px]"
     />
   );
 }
