@@ -1,9 +1,7 @@
 // src/app/api/capture/route.ts
 import { NextResponse } from "next/server";
-import { getDb, newId, nowIso } from "@/lib/db";
+import { getDbFromRequest, newId, nowIso } from "@/lib/db";
 import { normalizeUrl, extractDomain } from "@/lib/utils";
-
-export const runtime = "edge";
 
 export async function POST(req: Request) {
   const body = (await req.json()) as any;
@@ -13,7 +11,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "url is required" }, { status: 400 });
   }
 
-  const db = getDb();
+  const db = getDbFromRequest(req);
   const normalizedUrl = normalizeUrl(url);
 
   const existing = await db

@@ -1,13 +1,23 @@
 // src/app/page.tsx
-import { getDb } from "@/lib/db";
 import { ProjectCard } from "@/components/project-card";
 import { AttentionPanel } from "@/components/attention-panel";
 import type { Project } from "@/types";
+import type { D1Database } from "@cloudflare/workers-types";
 
-export const runtime = "edge";
+export const dynamic = 'force-dynamic';
+
+// Server component that fetches data from D1
+// In OpenNext with Cloudflare, D1 bindings are available at runtime
+
+function getDb(): D1Database {
+  // OpenNext injects the D1 binding on globalThis in server components at runtime
+  // @ts-ignore - OpenNext runtime injection
+  return globalThis.DB as D1Database;
+}
 
 async function getHomeData() {
   const db = getDb();
+  
   const { results: projects } = await db
     .prepare("SELECT * FROM projects WHERE archived_at IS NULL ORDER BY last_activity_at DESC LIMIT 12")
     .all();

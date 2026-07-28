@@ -1,15 +1,24 @@
 // src/lib/db.ts
-// D1 client + query helpers for Cloudflare Workers runtime (Next.js on Cloudflare via @cloudflare/next-on-pages)
-import { getRequestContext } from "@cloudflare/next-on-pages";
+// D1 client + query helpers for Cloudflare Workers runtime (Next.js on Cloudflare via @opennextjs/cloudflare)
+
+import type { D1Database } from "@cloudflare/workers-types";
 
 export interface Env {
   DB: D1Database;
 }
 
-export function getDb(): D1Database {
-  const ctx = getRequestContext<Env>();
-  return ctx.env.DB;
+// Get D1 from the request context (for use in route handlers)
+export function getDbFromRequest(req: Request): D1Database {
+  // OpenNext injects the D1 binding on the request object
+  // @ts-ignore - OpenNext runtime injection
+  return (req as unknown as { env: Env }).env.DB;
 }
+
+// For use in server components, we need to pass the D1 binding through context
+// This is a type helper for components that receive D1
+export type DbContext = {
+  db: D1Database;
+};
 
 export function newId(): string {
   return crypto.randomUUID();

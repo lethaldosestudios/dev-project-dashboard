@@ -1,28 +1,36 @@
 // src/app/api/search/route.ts
 import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
-
-export const runtime = "edge";
+import { getDbFromRequest } from "@/lib/db";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const q = (searchParams.get("q") || "").trim();
+  const query = searchParams.get("q");
 
-  if (!q) {
-    return NextResponse.json({ query: q, results: [] });
+  if (!query || query.length < 2) {
+    return NextResponse.json({ results: [] });
   }
 
-  const db = getDb();
-  const like = `%${q}%`;
+  const db = getDbFromRequest(req);
+  const searchPattern = `%${query}%`;
 
-  const [projects, notes, resources] = await Promise.all([
-    db.prepare("SELECT id, name, slug, 'project' as type FROM projects WHERE name LIKE ? OR description LIKE ?").bind(like, like).all(),
-    db.prepare("SELECT id, project_id, title, 'note' as type FROM notes WHERE title LIKE ? OR content_md LIKE ?").bind(like, like).all(),
-    db.prepare("SELECT id, project_id, title, url, 'resource' as type FROM resources WHERE title LIKE ? OR url LIKE ? OR note LIKE ?").bind(like, like, like).all(),
-  ]);
+  const { results: projects } = await db
+    .prepare(
+      "SELECT id, name, slug, description FROM projects WHERE name LIKE ? OR description LIKE ? OR stack LIKE ?"
+    )
+    .bind(searchPattern, searchPattern, searchPattern)
+    .all();
 
-  return NextResponse.json({
-    query: q,
-    results: [...projects.results, ...notes.results, ...resources.results],
-  });
+  const { results: resources } = await db
+    .prepare(
+      "SELECT id, url, title, note, domain FROM resources WHERE title LIKE ? OR url LIKE ? OR note LIKE ? OR summary LIKE ?"
+    )
+    .bind(searchPattern, searchPattern, searchPattern, searchPattern)
+    .all();
+
+  const { results: notes } = await db
+    .prepare("SELECT id, project_id, title, content_md FROM notes WHERE title LIKE ? OR content_md LIKE ?")
+    .bind(searchPattern, searchPattern)
+    .all();
+
+  return NextResponse.json({ projects, resources, notes });
 }

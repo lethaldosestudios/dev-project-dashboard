@@ -1,12 +1,10 @@
 // src/app/api/projects/route.ts
 import { NextResponse } from "next/server";
-import { getDb, newId, nowIso } from "@/lib/db";
+import { getDbFromRequest, newId, nowIso } from "@/lib/db";
 import { slugify } from "@/lib/utils";
 
-export const runtime = "edge";
-
-export async function GET() {
-  const db = getDb();
+export async function GET(req: Request) {
+  const db = getDbFromRequest(req);
   const { results } = await db
     .prepare("SELECT * FROM projects WHERE archived_at IS NULL ORDER BY last_activity_at DESC, created_at DESC")
     .all();
@@ -21,7 +19,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "name is required" }, { status: 400 });
   }
 
-  const db = getDb();
+  const db = getDbFromRequest(req);
   const id = newId();
   const slug = slugify(name);
   const now = nowIso();
