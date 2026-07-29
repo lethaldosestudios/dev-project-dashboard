@@ -48,7 +48,7 @@ Porter LaForce (solo use, single-tenant).
 **Future phases**
 - Phase 2: GitHub sync + stale detection
 - Phase 3: Bookmarklet quick capture
-- Phase 4: AI tagging/summarization (NVIDIA Build API)
+- Phase 4: AI-assisted development and visual/design review
 - Phase 5: Polish (widgets, Figma panel, reordering)
 
 ---
@@ -62,7 +62,7 @@ Porter LaForce (solo use, single-tenant).
 | Database | Cloudflare D1 (SQLite) |
 | Auth | Cloudflare Access (fallback: single-user password + session cookie) |
 | GitHub Integration | GitHub REST/GraphQL API (PAT to start) |
-| AI | NVIDIA Build API (Phase 4+) |
+| AI | Development-time model assistance; not a runtime app dependency |
 | Capture | Bookmarklet (Phase 3) |
 
 ## 3. Project Structure
@@ -167,6 +167,16 @@ To use GitHub sync:
 
 - [x] Phase 1: Core CRUD, search, dark mode, attention panel
 - [x] Phase 2: GitHub sync, stale flag
-- [ ] Phase 3: Bookmarklet capture
-- [ ] Phase 4: AI tagging/summarization
+- [x] Phase 3: Bookmarklet capture
+- [ ] Phase 4: AI-assisted development and visual/design review
 - [ ] Phase 5: Polish (Figma panel, reorder, deploy widgets)
+
+## 9. Phase 4 Development Workflow
+
+The three NVIDIA Build models are development tools for building this repository. They are not routed into the deployed dashboard and the dashboard does not require NVIDIA credentials to function.
+
+- **DeepSeek V4 Flash** — primary implementation model for code changes, debugging, API work, and focused repository tasks.
+- **Kimi K2.6** — visual/design model for screenshots, layout critique, interaction review, and visual direction.
+- **Nemotron 3 Super** — architecture and verification model for planning, tradeoff review, test strategy, and final implementation audits.
+
+Each model uses its own development-only API key so usage remains separately trackable. Keep those keys in Zo Secrets or the development environment used to invoke the models. Never add them to the dashboard's `.env.example`, browser bundle, deployed runtime, or source control.
