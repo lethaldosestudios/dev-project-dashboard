@@ -62,9 +62,8 @@ function ActivityItem({ activity }: { activity: GitHubActivity }) {
   const config = getEventConfig(activity.event_type);
 
   return (
-    <GlassCard
-      id={`source-${activity.id}`}
-      variant="elevated"
+    <GlassCard 
+      variant="elevated" 
       className="p-4 hover:border-white/20 transition-all"
     >
       <div className="flex items-start gap-3">

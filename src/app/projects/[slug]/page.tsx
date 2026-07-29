@@ -6,7 +6,6 @@ import { GlowInput } from "@/components/ui/glow-input";
 import { GitHubActivityFeed } from "@/components/github-activity-feed";
 import { ResourceList } from "@/components/resource-list";
 import { NotesEditor } from "@/components/notes-editor";
-import { ProjectAttentionReview } from "@/components/project-attention-review";
 import Link from "next/link";
 import type { Project, Resource, Note, GitHubActivity, ProjectLink } from "@/types";
 
@@ -147,8 +146,6 @@ export default async function ProjectDetailPage({ params }: { params: { slug: st
         <StatItem label="Notes" value={notes.length.toString()} icon="📝" />
         <StatItem label="Links" value={links.length.toString()} icon="🔗" />
       </GlassCard>
-
-      <ProjectAttentionReview projectId={project.id} />
 
       {/* Links */}
       {links.length > 0 && (

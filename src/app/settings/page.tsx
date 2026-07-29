@@ -1,5 +1,4 @@
 import { BookmarkletInstall } from "@/components/bookmarklet-install";
-import { AiStatusPanel } from "@/components/ai-status-panel";
 
 export default function SettingsPage() {
   return (
@@ -9,7 +8,6 @@ export default function SettingsPage() {
         <h1 className="text-3xl font-bold text-white">Settings</h1>
         <p className="text-white/50 text-sm mt-1">Connect the dashboard to the places you work.</p>
       </div>
-      <AiStatusPanel />
       <BookmarkletInstall />
     </main>
   );

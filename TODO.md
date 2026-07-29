@@ -10,12 +10,8 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - Added bookmarklet installation UI under Settings and dashboard navigation links.
 - Hardened `POST /api/capture` with URL, field-length, saved-via, and active-project validation.
 
-### Phase 4 — AI intelligence MVP
-- **Status:** Complete — 2026-07-29
-- Added NVIDIA Build server-side routing for DeepSeek resource analysis, Nemotron project attention reviews, and Kimi visual reviews.
-- Added validated JSON outputs, D1 `ai_runs` snapshots, input-hash caching, duplicate-run protection, AI tag persistence that preserves manual tags, and bounded run history.
-- Added resource actions, project review panel with source anchors, AI provider health in Settings, and browser-bundle secret checks.
-- **Verification:** TypeScript and `next build` pass. The existing Cloudflare Pages adapter build still stops on the deferred `async_hooks` resolution issue tracked below.
+### Next: Phase 4 — AI intelligence MVP
+- Use the committed plan in `docs/plans/2026-07-29-ai-intelligence-mvp-design.md`.
 
 ## Open Issues
 
