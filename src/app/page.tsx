@@ -68,6 +68,8 @@ export default async function HomePage() {
           <p className="text-white/50 text-sm">What needs your attention today?</p>
         </div>
         <div className="flex items-center gap-3">
+          <Link href="/capture" className="text-sm text-white/60 hover:text-white transition-colors">Capture</Link>
+          <Link href="/settings" className="text-sm text-white/60 hover:text-white transition-colors">Settings</Link>
           <GitHubSyncStatus lastSync={lastSync} />
           <LiquidButton variant="primary" size="sm">
             <PlusIcon className="w-4 h-4" />

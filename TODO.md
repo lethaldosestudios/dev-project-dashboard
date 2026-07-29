@@ -2,6 +2,17 @@
 
 Running log of issues intentionally deferred during setup, build, and deployment. Check this before starting new work so nothing gets silently forgotten.
 
+## Milestones
+
+### Phase 3 — Quick capture
+- **Status:** Complete — 2026-07-29
+- Added a manual/bookmarklet capture form with URL and title prefill, project assignment, notes, duplicate detection, and success/error states.
+- Added bookmarklet installation UI under Settings and dashboard navigation links.
+- Hardened `POST /api/capture` with URL, field-length, saved-via, and active-project validation.
+
+### Next: Phase 4 — AI intelligence MVP
+- Use the committed plan in `docs/plans/2026-07-29-ai-intelligence-mvp-design.md`.
+
 ## Open Issues
 
 ### 1. Wrangler pinned to v3.x — needs migration to OpenNext adapter
