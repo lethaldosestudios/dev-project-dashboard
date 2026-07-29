@@ -167,6 +167,18 @@ To use GitHub sync:
 
 - [x] Phase 1: Core CRUD, search, dark mode, attention panel
 - [x] Phase 2: GitHub sync, stale flag
-- [ ] Phase 3: Bookmarklet capture
-- [ ] Phase 4: AI tagging/summarization
+- [x] Phase 3: Bookmarklet capture
+- [x] Phase 4: AI tagging/summarization
 - [ ] Phase 5: Polish (Figma panel, reorder, deploy widgets)
+
+## 9. Phase 4 Status — AI intelligence MVP
+
+Phase 4 adds manual, server-side AI workflows through NVIDIA Build. Configure the NVIDIA variables from `.env.example` in the deployment environment; the API key is never sent to the browser.
+
+- `POST /api/ai/resources/:id/analyze` — DeepSeek V4 Flash analyzes stored resource metadata, returns a validated summary/tags/action, and persists the summary, content type, and AI tags.
+- `POST /api/ai/projects/:id/review` — Nemotron 3 Super reviews bounded project notes, resources, GitHub activity, and stale status, then stores a dated attention snapshot.
+- `POST /api/ai/resources/:id/visual-analyze` — Kimi K2.6 reviews an explicit HTTPS image URL or `data:image/*` reference; the server never fetches arbitrary resource URLs.
+- `GET /api/ai/runs` — bounded AI run history with resource, project, and operation filters.
+- `GET /api/ai/status` — configured model routing, latest run, and provider error count without exposing secrets.
+
+The project and resource pages expose the actions directly. Identical successful requests use input-hash caching, active duplicate runs are rejected, provider failures remain visible and retryable, and manual resource tags are preserved.

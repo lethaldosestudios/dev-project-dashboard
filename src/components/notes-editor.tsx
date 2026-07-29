@@ -142,8 +142,9 @@ function NoteItem({ note, isExpanded, onToggleExpand }: { note: Note; isExpanded
   };
 
   return (
-    <GlassCard 
-      variant="elevated" 
+    <GlassCard
+      id={`source-${note.id}`}
+      variant="elevated"
       className="p-4 cursor-pointer hover:border-white/20 transition-all"
       onClick={onToggleExpand}
     >
