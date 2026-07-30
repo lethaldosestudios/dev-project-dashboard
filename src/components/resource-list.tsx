@@ -48,7 +48,7 @@ function ResourceItem({ resource }: { resource: Resource }) {
   return (
     <GlassCard 
       variant="elevated" 
-      className="p-4 hover:border-white/20 transition-all group"
+      className="p-4 glass-interactive hover:border-white/20 transition-all group"
     >
       <div className="flex items-start gap-4">
         <div className="text-2xl text-white/60 group-hover:text-accent-primary transition-colors">
@@ -61,7 +61,7 @@ function ResourceItem({ resource }: { resource: Resource }) {
                 href={resource.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-white truncate hover:text-accent-primary transition-colors"
+                className="font-medium text-white truncate hover:text-accent-primary transition-colors focus-ring rounded-sm"
               >
                 {resource.title || resource.url}
               </Link>

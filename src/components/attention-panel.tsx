@@ -22,7 +22,7 @@ export function AttentionPanel({ staleProjects }: AttentionPanelProps) {
         <GlassCard 
           key={p.id} 
           variant="bordered" 
-          className="p-4 border-accent-red/20 bg-red-500/5"
+          className="p-4 glass-interactive border-accent-red/20 bg-red-500/5"
         >
           <div className="flex items-center justify-between">
             <div>
