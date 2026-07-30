@@ -1,3 +1,311 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Pure OLED Black Base */
+:root {
+  --background: 0 0 0;
+  --foreground: 255 255 255;
+}
+
+/* Glassmorphism Base Styles */
+@layer base {
+  html {
+    @apply antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    color: rgb(var(--foreground));
+    background-color: rgb(var(--background));
+  }
+}
+
+/* Glassmorphism Utility Classes */
+@layer utilities {
+  /* Glass Card Effect */
+  .glass {
+    @apply bg-glass-800/50 backdrop-blur-xl;
+    background-clip: padding-box;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .glass-hover {
+    @apply transition-all duration-300;
+  }
+  
+  .glass-hover:hover {
+    @apply bg-glass-700/60;
+    box-shadow: 
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      0 8px 32px rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Elevated Glass Card */
+  .glass-elevated {
+    @apply bg-glass-900/60 backdrop-blur-2xl;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      0 12px 48px rgba(0, 0, 0, 0.6);
+  }
+  
+  .glass-elevated:hover {
+    @apply bg-glass-800/70;
+    box-shadow: 
+      0 0 0 1px rgba(255, 255, 255, 0.12),
+      0 16px 64px rgba(0, 0, 0, 0.7);
+    transform: translateY(-2px);
+  }
+  
+  /* Liquid Glass Button */
+  .liquid-glass {
+    @apply relative overflow-hidden;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 212, 255, 0.2) 0%,
+      rgba(139, 92, 246, 0.2) 50%,
+      rgba(6, 182, 212, 0.2) 100%
+    );
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .liquid-glass:hover {
+    @apply bg-glass-600/30;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 212, 255, 0.3) 0%,
+      rgba(139, 92, 246, 0.3) 50%,
+      rgba(6, 182, 212, 0.3) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 
+      0 0 20px rgba(0, 212, 255, 0.3),
+      inset 0 0 20px rgba(255, 255, 255, 0.05);
+    transform: scale(1.02);
+  }
+  
+  .liquid-glass:active {
+    transform: scale(0.98);
+  }
+  
+  /* Glow Input */
+  .glow-input {
+    @apply bg-glass-900/50 backdrop-blur-md;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .glow-input:focus {
+    @apply outline-none;
+    border-color: rgba(0, 212, 255, 0.5);
+    box-shadow: 
+      0 0 0 2px rgba(0, 212, 255, 0.1),
+      0 0 15px rgba(0, 212, 255, 0.2);
+    background: rgba(0, 212, 255, 0.05);
+  }
+  
+  /* Glow Border */
+  .glow-border {
+    position: relative;
+  }
+  
+  .glow-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(0, 212, 255, 0.1),
+      transparent
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+  }
+  
+  .glow-border:hover::before {
+    opacity: 1;
+  }
+  
+  /* Floating Animation */
+  .float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  /* Glow Pulse Animation */
+  .glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+  
+  /* Liquid Background Animation */
+  .liquid-bg {
+    background: linear-gradient(
+      -45deg,
+      rgba(0, 212, 255, 0.1),
+      rgba(139, 92, 246, 0.1),
+      rgba(6, 182, 212, 0.1),
+      rgba(0, 212, 255, 0.1)
+    );
+    background-size: 400% 400%;
+    animation: liquid 15s ease infinite;
+  }
+  
+  /* Shimmer Effect */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+  
+  /* Glass Scrollbar */
+  .glass-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .glass-scrollbar::-webkit-scrollbar-track {
+    @apply bg-glass-900/30;
+  }
+  
+  .glass-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-glass-600/50 rounded-full;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  
+  .glass-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-glass-500/70;
+  }
+  
+  /* Selection */
+  ::selection {
+    @apply bg-accent-primary/30;
+    color: white;
+  }
+}
+
+/* Custom Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+  }
+}
+
+@keyframes liquid {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Micro-interactions */
+@layer utilities {
+  .micro-bounce {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .micro-bounce:hover {
+    transform: translateY(-2px);
+  }
+  
+  .micro-bounce:active {
+    transform: translateY(0);
+  }
+  
+  .micro-scale {
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .micro-scale:hover {
+    transform: scale(1.02);
+  }
+  
+  .micro-scale:active {
+    transform: scale(0.98);
+  }
+  
+  /* Gradient Text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background: linear-gradient(135deg, #00d4ff, #8b5cf6, #06b6d4);
+  }
+  
+  /* Gradient Border */
+  .gradient-border {
+    position: relative;
+    border-radius: inherit;
+  }
+  
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    margin: -1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 212, 255, 0.5),
+      rgba(139, 92, 246, 0.5),
+      rgba(6, 182, 212, 0.5)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+}
+
+/* Responsive Glass Effects */
+@media (max-width: 768px) {
+  .glass-elevated {
+    @apply backdrop-blur-lg;
+  }
+  
+  .liquid-glass {
+    @apply backdrop-blur-md;
+  }
+}

@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";
 import { slugify } from "@/lib/utils";
 
-export const runtime = "edge";
+const priorities = new Set(["low", "normal", "high"]);
 
 export async function GET() {
-  const db = getDb();
+  const db = await getDb();
   const { results } = await db
     .prepare("SELECT * FROM projects WHERE archived_at IS NULL ORDER BY last_activity_at DESC, created_at DESC")
     .all();
@@ -20,8 +20,14 @@ export async function POST(req: Request) {
   if (!name || typeof name !== "string") {
     return NextResponse.json({ error: "name is required" }, { status: 400 });
   }
+  if (name.trim().length > 120) {
+    return NextResponse.json({ error: "name must be 120 characters or fewer" }, { status: 400 });
+  }
+  if (!priorities.has(priority)) {
+    return NextResponse.json({ error: "priority must be low, normal, or high" }, { status: 400 });
+  }
 
-  const db = getDb();
+  const db = await getDb();
   const id = newId();
   const slug = slugify(name);
   const now = nowIso();
