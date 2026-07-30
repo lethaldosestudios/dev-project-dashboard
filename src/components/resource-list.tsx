@@ -3,6 +3,7 @@ import Link from "next/link";
 import { GlassCard } from "./ui/glass-card";
 import { LiquidButton } from "./ui/liquid-button";
 import type { Resource } from "@/types";
+import { ResourceActions } from "./resource-actions";
 
 interface ResourceListProps {
   resources: Resource[];
@@ -23,13 +24,13 @@ export function ResourceList({ resources, projectId }: ResourceListProps) {
   return (
     <div className="space-y-3">
       {resources.map((resource) => (
-        <ResourceItem key={resource.id} resource={resource} />
+        <ResourceItem key={resource.id} resource={resource} projectId={projectId ?? resource.project_id ?? ""} />
       ))}
     </div>
   );
 }
 
-function ResourceItem({ resource }: { resource: Resource }) {
+function ResourceItem({ resource, projectId }: { resource: Resource; projectId: string }) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString();
@@ -91,6 +92,7 @@ function ResourceItem({ resource }: { resource: Resource }) {
           </div>
         </div>
       </div>
+      <ResourceActions resource={resource} projectId={projectId} />
     </GlassCard>
   );
 }
