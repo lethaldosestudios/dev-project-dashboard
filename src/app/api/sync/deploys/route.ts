@@ -6,10 +6,8 @@ import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";
 import type { SyncResult } from "@/types";
 
-export const runtime = "edge";
-
 export async function POST() {
-  const db = getDb();
+  const db = await getDb();
   const syncRunId = newId();
   const startedAt = nowIso();
 

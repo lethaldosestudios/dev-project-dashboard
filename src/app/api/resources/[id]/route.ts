@@ -2,11 +2,10 @@
 import { NextResponse } from "next/server";
 import { getDb, nowIso } from "@/lib/db";
 
-export const runtime = "edge";
-
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = (await req.json()) as any;
-  const db = getDb();
+  const db = await getDb();
 
   const allowed = ["title", "summary", "note", "project_id", "content_type"] as const;
   const updates: string[] = [];
@@ -25,12 +24,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
   updates.push("updated_at = ?");
   values.push(nowIso());
-  values.push(params.id);
+  values.push(id);
 
   await db
     .prepare(`UPDATE resources SET ${updates.join(", ")} WHERE id = ?`)
     .bind(...values)
     .run();
 
-  return NextResponse.json({ ok: true, id: params.id, updates: body });
+  return NextResponse.json({ ok: true, id, updates: body });
 }

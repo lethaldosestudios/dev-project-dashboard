@@ -1,9 +1,9 @@
 // src/lib/db.ts
-// D1 client + query helpers for Cloudflare Workers runtime (Next.js on Cloudflare via @cloudflare/next-on-pages)
-import { getRequestContext } from "@cloudflare/next-on-pages";
+// D1 client + query helpers for Cloudflare Workers runtime via OpenNext Cloudflare
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-export function getDb(): D1Database {
-  const ctx = getRequestContext();
+export async function getDb(): Promise<D1Database> {
+  const ctx = await getCloudflareContext({ async: true });
   return (ctx.env as { DB: D1Database }).DB;
 }
 

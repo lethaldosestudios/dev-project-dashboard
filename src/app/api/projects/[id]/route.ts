@@ -2,14 +2,13 @@
 import { NextResponse } from "next/server";
 import { getDb, nowIso } from "@/lib/db";
 
-export const runtime = "edge";
-
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
-  const db = getDb();
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const db = await getDb();
 
   const project = await db
     .prepare("SELECT * FROM projects WHERE id = ? OR slug = ?")
-    .bind(params.id, params.id)
+    .bind(id, id)
     .first();
 
   if (!project) {
@@ -34,9 +33,10 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   return NextResponse.json({ project, links, notes, resources });
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = (await req.json()) as any;
-  const db = getDb();
+  const db = await getDb();
 
   const allowed = ["name", "description", "status", "priority", "stack", "last_activity_at"] as const;
   const updates: string[] = [];
@@ -55,12 +55,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
   updates.push("updated_at = ?");
   values.push(nowIso());
-  values.push(params.id);
+  values.push(id);
 
   await db
     .prepare(`UPDATE projects SET ${updates.join(", ")} WHERE id = ?`)
     .bind(...values)
     .run();
 
-  return NextResponse.json({ ok: true, id: params.id, updates: body });
+  return NextResponse.json({ ok: true, id, updates: body });
 }

@@ -3,12 +3,10 @@ import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";
 import { normalizeUrl, extractDomain } from "@/lib/utils";
 
-export const runtime = "edge";
-
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const projectId = searchParams.get("projectId");
-  const db = getDb();
+  const db = await getDb();
 
   const query = projectId
     ? db.prepare("SELECT * FROM resources WHERE project_id = ? ORDER BY created_at DESC").bind(projectId)
@@ -26,7 +24,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "url is required" }, { status: 400 });
   }
 
-  const db = getDb();
+  const db = await getDb();
   const normalizedUrl = normalizeUrl(url);
 
   const existing = await db

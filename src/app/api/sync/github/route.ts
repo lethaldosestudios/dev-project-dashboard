@@ -10,8 +10,6 @@ import {
 } from "@/lib/github";
 import type { SyncResult, SyncRun } from "@/types";
 
-export const runtime = "edge";
-
 // GitHub Personal Access Token - in production, use Cloudflare Secrets or KV
 // For now, this expects GITHUB_TOKEN in the request headers for testing
 const GITHUB_TOKEN_HEADER = "x-github-token";
@@ -29,7 +27,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const db = getDb();
+  const db = await getDb();
   const syncRunId = newId();
   const startedAt = nowIso();
   let recordsProcessed = 0;
@@ -188,7 +186,7 @@ export async function POST(req: Request) {
  * GET sync status and history
  */
 export async function GET() {
-  const db = getDb();
+  const db = await getDb();
   
   const { results: syncRuns } = await db
     .prepare("SELECT * FROM sync_runs WHERE sync_type = 'github' ORDER BY started_at DESC LIMIT 20")

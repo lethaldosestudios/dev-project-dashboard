@@ -2,8 +2,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 
-export const runtime = "edge";
-
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") || "").trim();
@@ -12,7 +10,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ query: q, results: [] });
   }
 
-  const db = getDb();
+  const db = await getDb();
   const like = `%${q}%`;
 
   const [projects, notes, resources] = await Promise.all([

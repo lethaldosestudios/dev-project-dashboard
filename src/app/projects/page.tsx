@@ -7,10 +7,10 @@ import { LiquidButton } from "@/components/ui/liquid-button";
 import { GlowInput } from "@/components/ui/glow-input";
 import type { Project } from "@/types";
 
-export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 async function getProjects() {
-  const db = getDb();
+  const db = await getDb();
   const { results } = await db
     .prepare("SELECT * FROM projects WHERE archived_at IS NULL ORDER BY last_activity_at DESC, created_at DESC")
     .all();

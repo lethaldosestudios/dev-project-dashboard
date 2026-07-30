@@ -57,7 +57,7 @@ Porter LaForce (solo use, single-tenant).
 
 | Layer | Choice |
 |---|---|
-| Frontend | Next.js 14 (App Router) + TypeScript + Tailwind + shadcn/ui |
+| Frontend | Next.js 15 (App Router) + TypeScript + Tailwind + shadcn/ui |
 | Hosting | Cloudflare Workers |
 | Database | Cloudflare D1 (SQLite) |
 | Auth | Cloudflare Access (fallback: single-user password + session cookie) |
@@ -113,7 +113,7 @@ dev-project-dashboard/
 │       └── 0001_init.sql
 ├── public/
 ├── .env.example
-├── wrangler.toml
+├── wrangler.jsonc
 ├── next.config.mjs
 ├── tailwind.config.ts
 ├── tsconfig.json
@@ -125,17 +125,33 @@ dev-project-dashboard/
 ```bash
 pnpm install
 pnpm dlx wrangler d1 create dev-project-dashboard-db
-# copy resulting database_id into wrangler.toml
+# copy resulting database_id into wrangler.jsonc
 pnpm dlx wrangler d1 execute dev-project-dashboard-db --file=./db/schema.sql
+pnpm dlx wrangler d1 execute dev-project-dashboard-db --local --file=./db/schema.sql
 pnpm dev
 ```
+
+Development preview: `http://localhost:3000`
+
+For a Cloudflare-compatible production preview, use the OpenNext Cloudflare Worker runtime:
+
+```bash
+pnpm preview
+```
+
+Cloudflare-runtime preview: `http://localhost:8787`
 
 ## 5. Deploy
 
 ```bash
-pnpm build
-pnpm dlx wrangler deploy
+pnpm deploy
 ```
+
+## Preview commands
+
+- `pnpm dev` starts the fast Next.js development server with the OpenNext Cloudflare platform bridge and local D1 bindings.
+- `pnpm preview` builds with OpenNext and serves the generated Worker through Wrangler's local Cloudflare runtime at `http://localhost:8787`.
+- `pnpm build` only creates the standard Next.js production bundle. It does not start a server.
 
 ## 6. Phase 1 Status — Functional
 

@@ -9,10 +9,10 @@ import { NotesEditor } from "@/components/notes-editor";
 import Link from "next/link";
 import type { Project, Resource, Note, GitHubActivity, ProjectLink } from "@/types";
 
-export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 async function getProjectData(slug: string) {
-  const db = getDb();
+  const db = await getDb();
 
   // Get project by slug
   const project = await db
@@ -57,8 +57,9 @@ async function getProjectData(slug: string) {
   };
 }
 
-export default async function ProjectDetailPage({ params }: { params: { slug: string } }) {
-  const data = await getProjectData(params.slug);
+export default async function ProjectDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const data = await getProjectData(slug);
 
   if (!data) {
     return (
@@ -66,7 +67,7 @@ export default async function ProjectDetailPage({ params }: { params: { slug: st
         <GlassCard variant="bordered" className="text-center py-12">
           <div className="text-4xl mb-4">🔍</div>
           <h1 className="text-2xl font-semibold text-white mb-2">Project not found</h1>
-          <p className="text-white/50">The project with slug "{params.slug}" doesn't exist.</p>
+          <p className="text-white/50">The project with slug "{slug}" doesn't exist.</p>
           <Link href="/projects" className="inline-block mt-4">
             <LiquidButton variant="secondary" size="sm">
               ← Back to Projects

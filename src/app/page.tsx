@@ -8,10 +8,10 @@ import { LiquidButton } from "@/components/ui/liquid-button";
 import Link from "next/link";
 import type { Project } from "@/types";
 
-export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 async function getHomeData() {
-  const db = getDb();
+  const db = await getDb();
   
   // Get active projects ordered by last activity
   const { results: projects } = await db
