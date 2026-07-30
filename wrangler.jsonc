@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "dev-project-dashboard",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "dev-project-dashboard-db",
+      "database_id": "fcf1841b-58d2-4d76-b734-8371d546f8c2"
+    }
+  ],
+  "vars": {
+    "ENVIRONMENT": "production"
+  }
+}

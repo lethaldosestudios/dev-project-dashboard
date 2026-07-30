@@ -2,8 +2,6 @@
 import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";
 
-export const runtime = "edge";
-
 /**
  * GET notes for a project
  */
@@ -15,7 +13,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "projectId is required" }, { status: 400 });
   }
 
-  const db = getDb();
+  const db = await getDb();
   const { results } = await db
     .prepare("SELECT * FROM notes WHERE project_id = ? ORDER BY updated_at DESC")
     .bind(projectId)
@@ -39,7 +37,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "content_md is required" }, { status: 400 });
   }
 
-  const db = getDb();
+  const db = await getDb();
   const id = newId();
   const now = nowIso();
 

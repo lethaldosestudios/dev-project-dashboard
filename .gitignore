@@ -5,3 +5,7 @@ node_modules/
 .env.local
 dist/
 .vercel/
+.open-next/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example

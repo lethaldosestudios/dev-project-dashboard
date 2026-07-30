@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";
 import { normalizeUrl, extractDomain } from "@/lib/utils";
 
-export const runtime = "edge";
-
 const allowedSavedVia = new Set(["manual", "bookmarklet", "extension", "ai"]);
 
 export async function POST(req: Request) {
@@ -43,7 +41,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "note must be 5000 characters or fewer" }, { status: 400 });
   }
 
-  const db = getDb();
+  const db = await getDb();
   if (projectId) {
     const project = await db.prepare("SELECT id FROM projects WHERE id = ? AND archived_at IS NULL").bind(projectId).first();
     if (!project) {
