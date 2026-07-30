@@ -18,6 +18,12 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - Nemotron handles architecture, planning, verification, and test strategy.
 - These models are development tools only. The dashboard must not require NVIDIA credentials or runtime model routes.
 
+### Copilot code review instructions
+- **Status:** Complete — 2026-07-30
+- Added `AGENTS.md` (repo root), `.github/copilot-instructions.md`, and `.github/instructions/code-review-dev-project-dashboard.instructions.md` to tailor GitHub Copilot's code review agent to this repo's actual stack and constraints (Next.js 15 App Router, Cloudflare Workers via OpenNext, D1 with raw `prepare`/`bind`, single-user/no multi-tenant auth, no automated test suite, phased roadmap).
+- **Verification:** Reviewed via the introducing PR on the `add-copilot-instructions` branch, since Copilot reads instruction files from the head branch.
+- **Follow-up:** Open a small test PR with an intentional issue (e.g. a string-interpolated D1 query or a hardcoded secret) to confirm the 🔴 CRITICAL tier fires as expected, and iterate on wording if Copilot misses or misapplies instructions.
+
 ## Open Issues
 
 ### 1. OpenNext migration
