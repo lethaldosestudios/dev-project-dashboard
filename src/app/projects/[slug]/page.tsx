@@ -8,6 +8,8 @@ import { ResourceList } from "@/components/resource-list";
 import { NotesEditor } from "@/components/notes-editor";
 import Link from "next/link";
 import type { Project, Resource, Note, GitHubActivity, ProjectLink } from "@/types";
+import { ProjectDialog } from "@/components/project-dialog";
+import { ResourceDialog } from "@/components/resource-dialog";
 
 export const dynamic = "force-dynamic";
 
@@ -118,14 +120,25 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           )}
         </div>
         <div className="flex items-center gap-3">
-          <LiquidButton variant="secondary" size="sm">
-            <EditIcon className="w-4 h-4" />
-            Edit
-          </LiquidButton>
-          <LiquidButton variant="primary" size="sm">
-            <PlusIcon className="w-4 h-4" />
-            Add Resource
-          </LiquidButton>
+          <ProjectDialog
+            mode="edit"
+            project={project}
+            trigger={
+              <LiquidButton variant="secondary" size="sm">
+                <EditIcon className="w-4 h-4" />
+                Edit
+              </LiquidButton>
+            }
+          />
+          <ResourceDialog
+            projectId={project.id}
+            trigger={
+              <LiquidButton variant="primary" size="sm">
+                <PlusIcon className="w-4 h-4" />
+                Add Resource
+              </LiquidButton>
+            }
+          />
         </div>
       </div>
 
@@ -180,10 +193,15 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       <section>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-medium text-white">Resources</h2>
-          <LiquidButton variant="secondary" size="sm">
-            <PlusIcon className="w-4 h-4" />
-            Add
-          </LiquidButton>
+          <ResourceDialog
+            projectId={project.id}
+            trigger={
+              <LiquidButton variant="secondary" size="sm">
+                <PlusIcon className="w-4 h-4" />
+                Add
+              </LiquidButton>
+            }
+          />
         </div>
         <ResourceList resources={resources} projectId={project.id} />
       </section>

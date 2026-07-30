@@ -6,6 +6,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { LiquidButton } from "@/components/ui/liquid-button";
 import { GlowInput } from "@/components/ui/glow-input";
 import type { Project } from "@/types";
+import { ProjectDialog } from "@/components/project-dialog";
 
 export const dynamic = "force-dynamic";
 
@@ -34,10 +35,15 @@ export default async function ProjectsPage() {
             className="w-full sm:w-64" 
             glowColor="cyan"
           />
-          <LiquidButton variant="primary" size="sm">
-            <PlusIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">New Project</span>
-          </LiquidButton>
+          <ProjectDialog
+            mode="create"
+            trigger={
+              <LiquidButton variant="primary" size="sm">
+                <PlusIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">New Project</span>
+              </LiquidButton>
+            }
+          />
         </div>
       </div>
 

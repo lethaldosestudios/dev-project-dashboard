@@ -7,6 +7,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { LiquidButton } from "@/components/ui/liquid-button";
 import Link from "next/link";
 import type { Project } from "@/types";
+import { ProjectDialog } from "@/components/project-dialog";
 
 export const dynamic = "force-dynamic";
 
@@ -71,10 +72,15 @@ export default async function HomePage() {
           <Link href="/capture" className="text-sm text-white/60 hover:text-white transition-colors">Capture</Link>
           <Link href="/settings" className="text-sm text-white/60 hover:text-white transition-colors">Settings</Link>
           <GitHubSyncStatus lastSync={lastSync} />
-          <LiquidButton variant="primary" size="sm">
-            <PlusIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">New Project</span>
-          </LiquidButton>
+          <ProjectDialog
+            mode="create"
+            trigger={
+              <LiquidButton variant="primary" size="sm">
+                <PlusIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">New Project</span>
+              </LiquidButton>
+            }
+          />
         </div>
       </div>
 

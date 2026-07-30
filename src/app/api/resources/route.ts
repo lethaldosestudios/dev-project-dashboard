@@ -23,8 +23,24 @@ export async function POST(req: Request) {
   if (!url || typeof url !== "string") {
     return NextResponse.json({ error: "url is required" }, { status: 400 });
   }
+  if (url.length > 2000) {
+    return NextResponse.json({ error: "url must be 2000 characters or fewer" }, { status: 400 });
+  }
+  if (projectId !== undefined && projectId !== null && typeof projectId !== "string") {
+    return NextResponse.json({ error: "projectId must be a string" }, { status: 400 });
+  }
+  if (!["manual", "bookmarklet", "extension", "ai"].includes(savedVia)) {
+    return NextResponse.json({ error: "savedVia is invalid" }, { status: 400 });
+  }
 
   const db = await getDb();
+  if (projectId) {
+    const project = await db.prepare("SELECT id FROM projects WHERE id = ? AND archived_at IS NULL").bind(projectId).first();
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+  }
+
   const normalizedUrl = normalizeUrl(url);
 
   const existing = await db

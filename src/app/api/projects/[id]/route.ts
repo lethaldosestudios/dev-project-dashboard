@@ -2,6 +2,9 @@
 import { NextResponse } from "next/server";
 import { getDb, nowIso } from "@/lib/db";
 
+const statuses = new Set(["active", "paused", "archived"]);
+const priorities = new Set(["low", "normal", "high"]);
+
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const db = await getDb();
@@ -44,6 +47,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   for (const key of allowed) {
     if (key in body) {
+      if (key === "status" && !statuses.has(body[key])) {
+        return NextResponse.json({ error: "status must be active, paused, or archived" }, { status: 400 });
+      }
+      if (key === "priority" && !priorities.has(body[key])) {
+        return NextResponse.json({ error: "priority must be low, normal, or high" }, { status: 400 });
+      }
       updates.push(`${key} = ?`);
       values.push(body[key]);
     }
