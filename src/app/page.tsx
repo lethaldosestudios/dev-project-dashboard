@@ -4,6 +4,7 @@ import { ProjectCard } from "@/components/project-card";
 import { AttentionPanel } from "@/components/attention-panel";
 import { GitHubSyncStatus } from "@/components/github-sync-status";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Header } from "@/components/ui/header";
 import { LiquidButton } from "@/components/ui/liquid-button";
 import Link from "next/link";
 import type { Project } from "@/types";
@@ -62,27 +63,26 @@ export default async function HomePage() {
 
   return (
     <main className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-1">Dashboard</h1>
-          <p className="text-white/50 text-sm">What needs your attention today?</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/capture" className="text-sm text-white/60 hover:text-white transition-colors">Capture</Link>
-          <Link href="/settings" className="text-sm text-white/60 hover:text-white transition-colors">Settings</Link>
-          <GitHubSyncStatus lastSync={lastSync} />
-          <ProjectDialog
-            mode="create"
-            trigger={
-              <LiquidButton variant="primary" size="sm">
-                <PlusIcon className="w-4 h-4" />
-                <span className="hidden sm:inline">New Project</span>
-              </LiquidButton>
-            }
-          />
-        </div>
-      </div>
+      <Header
+        title="Dashboard"
+        subtitle="What needs your attention today?"
+        actions={
+          <div className="flex items-center gap-3">
+            <Link href="/capture" className="text-sm text-white/60 hover:text-white transition-colors">Capture</Link>
+            <Link href="/settings" className="text-sm text-white/60 hover:text-white transition-colors">Settings</Link>
+            <GitHubSyncStatus lastSync={lastSync} />
+            <ProjectDialog
+              mode="create"
+              trigger={
+                <LiquidButton variant="primary" size="sm">
+                  <PlusIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline">New Project</span>
+                </LiquidButton>
+              }
+            />
+          </div>
+        }
+      />
 
       {/* Stats Overview */}
       <GlassCard variant="elevated" className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6">
