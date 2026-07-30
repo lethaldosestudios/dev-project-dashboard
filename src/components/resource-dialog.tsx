@@ -2,6 +2,7 @@
 
 import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { Resource } from "@/types";
 import { GlassCard } from "./ui/glass-card";
 import { GlowInput } from "./ui/glow-input";
 import { LiquidButton } from "./ui/liquid-button";
@@ -9,24 +10,26 @@ import { LiquidButton } from "./ui/liquid-button";
 interface ResourceDialogProps {
   projectId: string;
   trigger: ReactNode;
+  resource?: Resource;
 }
 
-export function ResourceDialog({ projectId, trigger }: ResourceDialogProps) {
+export function ResourceDialog({ projectId, trigger, resource }: ResourceDialogProps) {
   const router = useRouter();
+  const isEditing = Boolean(resource);
   const [open, setOpen] = useState(false);
-  const [url, setUrl] = useState("");
-  const [title, setTitle] = useState("");
-  const [note, setNote] = useState("");
+  const [url, setUrl] = useState(resource?.url ?? "");
+  const [title, setTitle] = useState(resource?.title ?? "");
+  const [note, setNote] = useState(resource?.note ?? "");
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!open) return;
-    setUrl("");
-    setTitle("");
-    setNote("");
+    setUrl(resource?.url ?? "");
+    setTitle(resource?.title ?? "");
+    setNote(resource?.note ?? "");
     setError("");
-  }, [open]);
+  }, [open, resource]);
 
   useEffect(() => {
     if (!open) return;
@@ -40,7 +43,6 @@ export function ResourceDialog({ projectId, trigger }: ResourceDialogProps) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-
     const trimmedUrl = url.trim();
     try {
       const parsed = new URL(trimmedUrl);
@@ -52,23 +54,19 @@ export function ResourceDialog({ projectId, trigger }: ResourceDialogProps) {
 
     setIsSaving(true);
     try {
-      const response = await fetch("/api/resources", {
-        method: "POST",
+      const response = await fetch(isEditing ? `/api/resources/${resource?.id}` : "/api/resources", {
+        method: isEditing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectId,
-          url: trimmedUrl,
-          title: title.trim() || null,
-          note: note.trim() || null,
-          savedVia: "manual",
-        }),
+        body: JSON.stringify(isEditing
+          ? { url: trimmedUrl, title: title.trim() || null, note: note.trim() || null }
+          : { projectId, url: trimmedUrl, title: title.trim() || null, note: note.trim() || null, savedVia: "manual" }),
       });
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
-      if (!response.ok) throw new Error(payload.error || "Could not save resource.");
+      if (!response.ok) throw new Error(payload.error || `Could not ${isEditing ? "update" : "save"} resource.`);
       setOpen(false);
       router.refresh();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Could not save resource.");
+      setError(saveError instanceof Error ? saveError.message : `Could not ${isEditing ? "update" : "save"} resource.`);
     } finally {
       setIsSaving(false);
     }
@@ -85,70 +83,28 @@ export function ResourceDialog({ projectId, trigger }: ResourceDialogProps) {
             if (event.target === event.currentTarget) setOpen(false);
           }}
         >
-          <GlassCard
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="resource-dialog-title"
-            className="w-full max-w-lg border-white/15 bg-black/90 shadow-2xl"
-            hoverEffect={false}
-          >
+          <GlassCard role="dialog" aria-modal="true" aria-labelledby="resource-dialog-title" className="w-full max-w-lg border-white/15 bg-black/90 shadow-2xl" hoverEffect={false}>
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-accent-cyan">Resource capture</p>
-                <h2 id="resource-dialog-title" className="mt-1 text-xl font-semibold text-white">Add resource</h2>
+                <h2 id="resource-dialog-title" className="mt-1 text-xl font-semibold text-white">{isEditing ? "Edit resource" : "Add resource"}</h2>
               </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="text-2xl leading-none text-white/40 transition-colors hover:text-white"
-                aria-label="Close resource dialog"
-              >
-                ×
-              </button>
+              <button type="button" onClick={() => setOpen(false)} className="text-2xl leading-none text-white/40 transition-colors hover:text-white" aria-label="Close resource dialog">×</button>
             </div>
-
             <form onSubmit={handleSubmit} className="space-y-4">
-              <label className="block text-sm text-white/70">
-                URL
-                <GlowInput
-                  type="url"
-                  value={url}
-                  onChange={(event) => setUrl(event.target.value)}
-                  placeholder="https://example.com/reference"
-                  maxLength={2000}
-                  autoFocus
-                  className="mt-2"
-                />
+              <label className="block text-sm text-white/70">URL
+                <GlowInput type="url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://example.com/reference" maxLength={2000} autoFocus className="mt-2" />
               </label>
-              <label className="block text-sm text-white/70">
-                Title <span className="text-white/30">(optional)</span>
-                <GlowInput
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  placeholder="A useful title"
-                  maxLength={240}
-                  className="mt-2"
-                />
+              <label className="block text-sm text-white/70">Title <span className="text-white/30">(optional)</span>
+                <GlowInput value={title} onChange={(event) => setTitle(event.target.value)} placeholder="A useful title" maxLength={240} className="mt-2" />
               </label>
-              <label className="block text-sm text-white/70">
-                Note <span className="text-white/30">(optional)</span>
-                <textarea
-                  value={note}
-                  onChange={(event) => setNote(event.target.value)}
-                  placeholder="Why is this useful?"
-                  maxLength={2000}
-                  rows={3}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-glass-900/50 p-3 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-accent-cyan/50 focus:shadow-glow-cyan"
-                />
+              <label className="block text-sm text-white/70">Note <span className="text-white/30">(optional)</span>
+                <textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Why is this useful?" maxLength={2000} rows={3} className="mt-2 w-full rounded-xl border border-white/10 bg-glass-900/50 p-3 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-accent-cyan/50 focus:shadow-glow-cyan" />
               </label>
               {error && <p className="text-sm text-accent-red">{error}</p>}
               <div className="flex justify-end gap-3 pt-2">
-                <LiquidButton type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
-                  Cancel
-                </LiquidButton>
-                <LiquidButton type="submit" variant="primary" size="sm" isLoading={isSaving}>
-                  Save resource
-                </LiquidButton>
+                <LiquidButton type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>Cancel</LiquidButton>
+                <LiquidButton type="submit" variant="primary" size="sm" isLoading={isSaving}>{isEditing ? "Save changes" : "Save resource"}</LiquidButton>
               </div>
             </form>
           </GlassCard>

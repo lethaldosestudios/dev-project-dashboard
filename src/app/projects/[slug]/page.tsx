@@ -10,6 +10,7 @@ import Link from "next/link";
 import type { Project, Resource, Note, GitHubActivity, ProjectLink } from "@/types";
 import { ProjectDialog } from "@/components/project-dialog";
 import { ResourceDialog } from "@/components/resource-dialog";
+import { ProjectActions } from "@/components/project-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -139,6 +140,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               </LiquidButton>
             }
           />
+          <ProjectActions projectId={project.id} status={project.status} />
         </div>
       </div>
 
