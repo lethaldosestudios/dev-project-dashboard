@@ -30,7 +30,7 @@ jobs:
           pnpm approve-builds --all || true
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile || pnpm install
+        run: pnpm install --frozen-lockfile --no-optional || pnpm install --no-optional
 
       - name: Build
         run: pnpm build
