@@ -24,6 +24,11 @@ jobs:
           corepack enable
           corepack prepare pnpm@latest --activate
 
+      - name: Approve pnpm build scripts (CI)
+        run: |
+          # Approve any packages that require build scripts (non-interactive)
+          pnpm approve-builds --all || true
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile || pnpm install
 
