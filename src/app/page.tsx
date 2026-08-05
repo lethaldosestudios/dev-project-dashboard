@@ -61,7 +61,7 @@ export default async function HomePage() {
   const { projects, stale, activityCounts, lastSync } = await getHomeData();
 
   return (
-    <main className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <main className="relative p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div>

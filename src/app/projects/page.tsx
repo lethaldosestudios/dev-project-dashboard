@@ -22,7 +22,7 @@ export default async function ProjectsPage() {
   const projects = await getProjects();
 
   return (
-    <main className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <main className="relative p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
