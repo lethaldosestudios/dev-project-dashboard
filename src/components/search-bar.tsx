@@ -25,7 +25,7 @@ export function SearchBar({ value, onChange, placeholder = "Search...", onSearch
   };
 
   return (
-    <div className="relative">
+    <div className="relative focus-ring rounded-xl">
       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
         <SearchIcon className="w-5 h-5" />
       </div>

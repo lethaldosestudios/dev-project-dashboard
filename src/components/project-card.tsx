@@ -32,12 +32,12 @@ export function ProjectCard({ project, activityCount = 0 }: ProjectCardProps) {
   return (
     <Link 
       href={`/projects/${project.slug}`} 
-      className="block group"
+      className="block group focus-ring"
     >
       <GlassCard 
         variant="elevated" 
         glow={isStale ? "none" : "subtle"}
-        className="h-full border-white/5 hover:border-white/10"
+        className="h-full glass-interactive border-white/5 hover:border-white/10"
       >
         <div className="flex justify-between items-start mb-3">
           <div className="flex-1 min-w-0">
