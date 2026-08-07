@@ -52,6 +52,19 @@ const config: Config = {
           "glass-hover": "rgba(255, 255, 255, 0.2)",
         },
       },
+      tokens: {
+        bg: "var(--color-bg)",
+        fg: "var(--color-fg)",
+        accent: {
+          primary: "var(--accent-primary)",
+          secondary: "var(--accent-secondary)",
+          purple: "var(--accent-purple)",
+          cyan: "var(--accent-cyan)",
+          emerald: "var(--accent-emerald)",
+          orange: "var(--accent-orange)",
+        },
+        ring: "var(--focus-ring)",
+      },
       
       // Custom backdrop blur values for glassmorphism
       backdropBlur: {

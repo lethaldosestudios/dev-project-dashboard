@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getDb } from "@/lib/db";
 import { ProjectCard } from "@/components/project-card";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Header } from "@/components/ui/header";
 import { LiquidButton } from "@/components/ui/liquid-button";
 import { GlowInput } from "@/components/ui/glow-input";
 import type { Project } from "@/types";
@@ -22,30 +23,29 @@ export default async function ProjectsPage() {
   const projects = await getProjects();
 
   return (
-    <main className="relative p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-1">Projects</h1>
-          <p className="text-white/50 text-sm">Manage all your development projects</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <GlowInput 
-            placeholder="Search projects..." 
-            className="w-full sm:w-64" 
-            glowColor="cyan"
-          />
-          <ProjectDialog
-            mode="create"
-            trigger={
-              <LiquidButton variant="primary" size="sm">
-                <PlusIcon className="w-4 h-4" />
-                <span className="hidden sm:inline">New Project</span>
-              </LiquidButton>
-            }
-          />
-        </div>
-      </div>
+    <main className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+      <Header
+        title="Projects"
+        subtitle="Manage all your development projects"
+        actions={
+          <div className="flex items-center gap-3">
+            <GlowInput
+              placeholder="Search projects..."
+              className="w-full sm:w-64"
+              glowColor="cyan"
+            />
+            <ProjectDialog
+              mode="create"
+              trigger={
+                <LiquidButton variant="primary" size="sm">
+                  <PlusIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline">New Project</span>
+                </LiquidButton>
+              }
+            />
+          </div>
+        }
+      />
 
       {/* Stats */}
       <GlassCard variant="elevated" className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6">
