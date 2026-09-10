@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS projects (
   status TEXT DEFAULT 'active',
   priority TEXT DEFAULT 'normal',
   stack TEXT,
+  github_repo TEXT,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
   last_activity_at TEXT,

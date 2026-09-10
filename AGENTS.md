@@ -25,6 +25,10 @@ to every comment you leave.
 - The project moves through numbered phases tracked in `README.md` and
   `TODO.md`. Check that a PR's scope matches its claimed phase before
   approving scope expansion into features marked "out of MVP."
+- The project now has `postcss.config.mjs` — Tailwind compiles correctly.
+- `pnpm preview` is the production-parity command. It previously failed due
+  to `export const runtime = 'edge'` on API routes (tracked in TODO.md #5);
+  that issue is resolved.
 
 ### Code Style & Anti-Patterns
 
@@ -45,6 +49,9 @@ Enforce these strict patterns for code inspection:
   a runtime route under `src/app/**`.
 - **Schema changes:** Any edit to `db/schema.sql` must have a matching,
   numbered file in `db/migrations/`.
+- **Edge runtime on API routes:** `export const runtime = 'edge';` is not
+  supported by OpenNext Cloudflare for `app/api/` routes. Remove it and use
+  the standard Workers runtime. Flag any new route that adds it.
 - **Client/server boundary:** Flag unnecessary `"use client"` directives, and
   flag any server-only logic (DB access, secrets) reachable from a client
   component.
@@ -55,3 +62,5 @@ Enforce these strict patterns for code inspection:
 - Lack of multi-tenant authorization checks (this is single-user by design)
 - Missing abstraction layers, heavyweight config, or enterprise-scale
   tooling that doesn't fit a $0–1/month solo project
+- Missing `github_repo` column — this is tracked in `TODO.md` (#6). Flag if
+  new code depends on it without the accompanying migration.

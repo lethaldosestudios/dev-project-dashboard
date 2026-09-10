@@ -1,5 +1,3 @@
-export const runtime = 'edge';
-
 // src/app/api/sync/deploys/route.ts
 // Placeholder for deploy sync (Vercel, Cloudflare, etc.)
 // For Phase 2, we'll focus on GitHub sync; deploys can be added later

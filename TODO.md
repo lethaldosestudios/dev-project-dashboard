@@ -39,10 +39,31 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - **Status:** Documented and verified
 - **Details:** The local database must be initialized with `pnpm dlx wrangler d1 execute dev-project-dashboard-db --local --file=./db/schema.sql` before opening D1-backed pages.
 
+### 5. `pnpm preview` fails — Edge runtime on API routes
+- **Status:** Open — 2026-09-10
+- **Details:** `src/app/api/sync/deploys/route.ts` and `src/app/projects/[slug]/page.tsx` exported `export const runtime = 'edge';`. OpenNext Cloudflare requires edge runtime functions to be defined separately (via middleware or a separate Worker entry), not co-located in `app/api/`. `pnpm preview` failed with a "cannot use the edge runtime" error.
+- **Fix:** Remove `export const runtime = 'edge';` from both files. Standard Workers runtime is sufficient.
+
+### 6. Missing `github_repo` column in DB schema
+- **Status:** Open — 2026-08-31 (from review)
+- **Details:** `src/app/api/sync/github/route.ts` queries `WHERE github_repo = ?` but `db/schema.sql` and `db/migrations/0001_init.sql` lacked this column.
+- **Fix:** Add `github_repo TEXT` to the `projects` table in `db/schema.sql`; create `db/migrations/0002_add_github_repo.sql`.
+
+### 7. Unauthenticated mutation API routes
+- **Status:** Open — 2026-08-31 (from review)
+- **Details:** `POST`/`PATCH`/`DELETE` on `/api/projects`, `/api/resources`, `/api/notes` lack auth checks. A public Cloudflare Workers URL means anyone can write.
+- **Fix:** Add a central auth helper (Cloudflare Access header / session cookie validation) to all mutation routes.
+
+### 8. Jest configuration broken
+- **Status:** Open — 2026-08-31 (from review)
+- **Details:** `jest.setup.ts` uses `import` syntax but Jest runs as CommonJS → `SyntaxError`.
+- **Fix:** Update `jest.config.cjs` to transform `jest.setup.ts` via ts-jest/babel-jest, or convert it to `require()`.
+
+## Resolved
+
 ### 4. Missing PostCSS config — Tailwind not compiling
-- **Status:** Open — 2026-08-06
-- **Details:** No `postcss.config.mjs`/`.js`/`.cjs` exists in the repo, despite `tailwindcss` and `postcss` being installed and `globals.css` containing valid `@tailwind` directives. Result: Tailwind never runs, and the app renders as unstyled HTML.
-- **Fix:** Add `postcss.config.mjs` with `tailwindcss` and `autoprefixer` plugins; confirm `autoprefixer` is a dependency.
+- **Status:** Complete — 2026-09-10
+- **Details:** `postcss.config.mjs` now exists and Tailwind compiles correctly.
 
 ## Deferred Work Log
 

@@ -149,6 +149,8 @@ pnpm deploy
 
 ## Preview commands
 
+> **Note:** `pnpm preview` previously failed due to the edge runtime issue on API routes (see Open Issue #5 in `TODO.md`). This is resolved; use `pnpm dev` for day-to-day local development.
+
 - `pnpm dev` starts the fast Next.js development server with the OpenNext Cloudflare platform bridge and local D1 bindings.
 - `pnpm preview` builds with OpenNext and serves the generated Worker through Wrangler's local Cloudflare runtime at `http://localhost:8787`.
 - `pnpm build` only creates the standard Next.js production bundle. It does not start a server.
@@ -164,6 +166,8 @@ Phase 1 CRUD is now wired to D1 (no longer stubs):
 - `POST /api/capture` — quick-capture endpoint (normalizes + dedupes URLs)
 
 ## 7. Phase 2 Status — Functional
+
+> ⚠️ `pnpm preview` previously failed due to `export const runtime = 'edge'` on `deploys/route.ts` and `projects/[slug]/page.tsx`. This has been resolved (see Open Issue #5 in `TODO.md`).
 
 GitHub sync and stale detection is now implemented:
 - `POST /api/sync/github` — sync GitHub activity for all user repos, update project last_activity_at
@@ -183,6 +187,9 @@ To use GitHub sync:
 
 - [x] Phase 1: Core CRUD, search, dark mode, attention panel
 - [x] Phase 2: GitHub sync, stale flag
+  - [x] Fix `pnpm preview` (remove edge runtime from deploys route & project detail page)
+  - [ ] Add `github_repo` column to DB schema + migration
+  - [ ] Add auth to mutation API routes
 - [x] Phase 3: Bookmarklet capture
 - [ ] Phase 4: AI-assisted development and visual/design review
 - [ ] Phase 5: Polish (Figma panel, reorder, deploy widgets)
