@@ -1,34 +1,34 @@
-export const runtime = 'edge';
-
-// src/app/api/sync/github/route.ts
 import { NextResponse } from "next/server";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb, newId, nowIso } from "@/lib/db";
 import {
-  fetchUserRepos,
-  fetchRepoEvents,
-  extractActivityFromEvents,
-  getProjectIdForRepo,
-  getRepoLastActivity,
+  fetchUserRepos, fetchRepoEvents, extractActivityFromEvents,
+  getProjectIdForRepo, getRepoLastActivity,
 } from "@/lib/github";
 import type { SyncResult, SyncRun } from "@/types";
 
-// GitHub Personal Access Token - in production, use Cloudflare Secrets or KV
-// For now, this expects GITHUB_TOKEN in the request headers for testing
 const GITHUB_TOKEN_HEADER = "x-github-token";
+
+async function resolveGitHubToken(req: Request): Promise<string | null> {
+const headerToken = req.headers.get(GITHUB_TOKEN_HEADER);
+if (headerToken) return headerToken;
+const ctx = await getCloudflareContext({ async: true });
+const env = ctx.env as { GITHUB_TOKEN?: string };
+return env.GITHUB_TOKEN ?? null;
+}
 
 /**
  * Sync GitHub activity for all user repos and update project last_activity_at
  */
 export async function POST(req: Request) {
-  const token = req.headers.get(GITHUB_TOKEN_HEADER);
-  
+  const token = await resolveGitHubToken(req);
   if (!token) {
     return NextResponse.json(
-      { error: "GitHub token required in x-github-token header" },
+      { error: "GitHub token not configured. Set GITHUB_TOKEN via wrangler secret put (prod) or .dev.vars (local)." },
       { status: 401 }
     );
   }
-
+  
   const db = await getDb();
   const syncRunId = newId();
   const startedAt = nowIso();
@@ -195,4 +195,4 @@ export async function GET() {
     .all();
 
   return NextResponse.json({ syncRuns });
-}
+  }
