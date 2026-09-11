@@ -32,7 +32,7 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - **Why deferred:** Out of scope for the auth work (TODO #7); no current UI or need. A single-user app can manage via recreating notes, but full CRUD parity with projects/resources would be good eventually.
 - **Fix:** Add `notes/[id]/route.ts` with PATCH/DELETE (auth-protected), plus edit/delete controls in the notes editor.
 
-### 10. Unresolved findings from `docs/reviews/codebase-review.md` (2026-08-31)
+### 10. Unresolved findings from `archives/codebase-review.md` (2026-08-31)
 - **Status:** Open — 2026-09-11
 - **Details:** The 2026-08-31 codebase review flagged several items. Most are since resolved (edge runtime #5, Jest config #8, `github_repo` schema #6, auth #7, PostCSS #4). The following remain open:
   - 🔴 CRITICAL: SQL injection via template-literal column construction — `src/app/api/projects/[id]/route.ts` (line 58) and `src/app/api/resources/[id]/route.ts` (line 33) build `UPDATE ... SET ${updates.join(", ")}` dynamically. Column names are allowlisted today, but this breaks the parameterized-query guarantee and could open injection vectors if keys change.

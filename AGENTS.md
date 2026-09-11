@@ -39,9 +39,11 @@ to every comment you leave.
   truth. The repo-root files `README.md`, `TODO.md`, and `AGENTS.md` are the
   canonical living status docs.
 - Do **not** write into `docs/` unless the owner explicitly directs it.
-- Exception: `HANDOFF.md` at the repo root (not inside `docs/`) exists by
-  design to transfer context between AI sessions. Even so, prefer
-  `TODO.md` / `README.md` / `AGENTS.md` as the canonical status docs.
+- Exception: a `HANDOFF.md` at the repo root (not inside `docs/`) may exist by
+  design to transfer context between AI sessions. Once its work is complete it
+  is archived to `archives/` (see `archives/HANDOFF.md`), so a root-level
+  `HANDOFF.md` is transient, not a permanent status doc. Even so, prefer
+  `TODO.md` / `README.md` / `AGENTS.md` as the canonical living status docs.
 
 ### Code Style & Anti-Patterns
 
