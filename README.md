@@ -1,71 +1,62 @@
 # Dev Project Dashboard
 
-## 1. Mini PRD
+> A self-hosted project command center. One screen that answers the only question that matters: **what needs my attention right now?**
 
-**Origin**
-This project started after reading a dev.to article describing a Chrome-extension tool (STACKFOLO-style "new tab" project dashboards). Porter never used that extension, but recognized the same underlying problem: scattered links, notes, and GitHub activity across active projects with no owned, extendable system.
-
-**Problem**
-Porter runs multiple active dev/design projects (Lethal Dose Studios, personal tools, client work) and currently tracks links, notes, and GitHub activity across scattered bookmarks with no single owned system and no automation hooks.
-
-**Goal**
-A self-hosted, single-user dashboard that answers one question fast: *what needs my attention across my projects right now?* It's a fully owned, extendable alternative to closed browser-extension tools — built on infrastructure Porter controls end to end.
-
-**Primary user**
-Porter LaForce (solo use, single-tenant).
-
-**Core job-to-be-done**
-1. See active projects and what changed recently.
-2. Save a resource (link/note) to a project in under 10 seconds.
-3. Track GitHub activity and flag stale projects.
-4. Later: get AI-assisted tagging/summaries once real usage data exists.
-
-**MVP scope (v1 — build now)**
-- Project list + detail pages (notes, resources, typed links)
-- Global search across projects/notes/resources
-- Manual resource capture (URL, title, tags, note)
-- Dark mode by default
-- "Needs attention" / stale-project flag
-- D1 schema + working CRUD API routes
-- Deploy to Cloudflare Workers
-
-**Explicitly out of MVP**
-- Browser extension (bookmarklet only for now)
-- AI chat over projects
-- Drag-to-reorder
-- Vercel deploy status widgets
-
-**Non-goals**
-- Multi-user support
-- Public-facing product polish
-- Third-party SaaS dependency for core data
-
-**Success criteria**
-- Daily use becomes the default workflow within 2 weeks of MVP deploy
-- Capture flow takes under 10 seconds from any page
-- $0–1/month infra cost maintained
-
-**Future phases**
-- Phase 2: GitHub sync + stale detection
-- Phase 3: Bookmarklet quick capture
-- Phase 4: AI-assisted development and visual/design review
-- Phase 5: Polish (widgets, Figma panel, reordering)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=flat&logo=next.js&logoColor=white)
+![Cloudflare](https://img.shields.io/badge/Cloudflare_Workers-F38020?style=flat&logo=cloudflare&logoColor=white)
+![SQLite](https://img.shields.io/badge/D1_(SQLite)-003B57?style=flat&logo=sqlite&logoColor=white)
 
 ---
 
-## 2. Tech Stack
+## What is it?
+
+Dev Project Dashboard is a single-user dashboard for tracking the scattered links, notes, and GitHub activity that come with running multiple active projects. No SaaS, no lock-in — your data lives in a Cloudflare D1 database you own, served from a Cloudflare Worker, styled with a dark glassmorphism UI.
+
+It started as a "new-tab project dashboard" itch: bookmarks and notes were spread across a dozen places with no single owned view. This is the fix.
+
+---
+
+## Current status
+
+| Phase | Status |
+|---|---|
+| Phase 1 — Core CRUD, search, dark mode, attention panel | ✅ Complete |
+| Phase 2 — GitHub sync + stale detection | ✅ Complete |
+| Phase 3 — Bookmarklet quick capture | ✅ Complete |
+| Phase 4 — AI-assisted development & visual/design review | 🔄 Next |
+
+The app builds, previews, and deploys cleanly. See [`TODO.md`](./TODO.md) for the single known feature gap (notes edit/delete) and any deferred work.
+
+---
+
+## Features
+
+- **Project dashboard** — an "attention-first" homepage listing active projects by recent activity, with a dedicated **stale-project flag** (14+ days without a touch).
+- **Project detail pages** — notes, resources, and typed links per project.
+- **Resources** — save links with title, normalize/dedupe by URL, tag them, and capture where they came from.
+- **Notes** — lightweight markdown notes via a chat-style editor.
+- **GitHub sync** — pull repo activity into the dashboard, update project `last_activity_at`, and flag stale projects automatically.
+- **Global search** — one box across projects, notes, and resources.
+- **Bookmarklet capture** — save a resource from any page in under 10 seconds (install link lives in Settings).
+- **Glassmorphism UI** — dark mode by default, built on Tailwind + shadcn/ui primitives.
+
+---
+
+## Tech stack
 
 | Layer | Choice |
 |---|---|
 | Frontend | Next.js 15 (App Router) + TypeScript + Tailwind + shadcn/ui |
-| Hosting | Cloudflare Workers |
-| Database | Cloudflare D1 (SQLite) |
-| Auth | Cloudflare Access (fallback: single-user password + session cookie) |
-| GitHub Integration | GitHub REST/GraphQL API (PAT to start) |
-| AI | Development-time model assistance; not a runtime app dependency |
-| Capture | Bookmarklet (Phase 3) |
+| Hosting | Cloudflare Workers (via OpenNext) |
+| Database | Cloudflare D1 (SQLite), raw `prepare()`/`bind()` — no ORM |
+| Auth | Cloudflare Access (see [Authentication](#authentication)) |
+| GitHub | REST/GraphQL API via a Personal Access Token |
+| Testing | Jest + ts-jest + @testing-library/react |
 
-## 3. Project Structure
+---
+
+## Project structure
 
 ```
 dev-project-dashboard/
@@ -83,16 +74,16 @@ dev-project-dashboard/
 │   │   │   ├── projects/[id]/route.ts
 │   │   │   ├── resources/route.ts
 │   │   │   ├── resources/[id]/route.ts
+│   │   │   ├── notes/route.ts
 │   │   │   ├── search/route.ts
 │   │   │   ├── capture/route.ts
-│   │   │   ├── notes/route.ts
 │   │   │   └── sync/
 │   │   │       ├── github/route.ts
 │   │   │       └── deploys/route.ts
-│   │   └── layout.tsx
+│   │   ├── layout.tsx
 │   │   └── globals.css
 │   ├── components/
-│   │   ├── ui/                     # shadcn components
+│   │   ├── ui/                     # shadcn/ui + custom glass components
 │   │   ├── project-card.tsx
 │   │   ├── resource-list.tsx
 │   │   ├── notes-editor.tsx
@@ -100,9 +91,10 @@ dev-project-dashboard/
 │   │   ├── attention-panel.tsx
 │   │   ├── github-sync-status.tsx
 │   │   ├── github-activity-feed.tsx
-│   │   └── project-header.tsx
+│   │   └── ...
 │   ├── lib/
 │   │   ├── db.ts                   # D1 client + query helpers
+│   │   ├── auth.ts                 # Cloudflare Access helper
 │   │   ├── github.ts               # GitHub API client
 │   │   └── utils.ts
 │   └── types/
@@ -110,96 +102,104 @@ dev-project-dashboard/
 ├── db/
 │   ├── schema.sql
 │   └── migrations/
-│       └── 0001_init.sql
+│       ├── 0001_init.sql
+│       └── 0002_add_github_repo.sql
 ├── public/
 ├── .env.example
+├── .dev.vars.example
 ├── wrangler.jsonc
 ├── next.config.mjs
 ├── tailwind.config.ts
+├── postcss.config.mjs
+├── jest.config.cjs
 ├── tsconfig.json
 └── README.md
 ```
 
-## 4. Setup
+---
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 18+ and [pnpm](https://pnpm.io/)
+- A Cloudflare account (for Workers + D1)
+- (Optional) a GitHub Personal Access Token with `repo` scope, for GitHub sync
+
+### 1. Install
 
 ```bash
 pnpm install
+```
+
+### 2. Create the D1 database
+
+```bash
 pnpm dlx wrangler d1 create dev-project-dashboard-db
-# copy resulting database_id into wrangler.jsonc
+```
+
+Copy the `database_id` from the output into `wrangler.jsonc`.
+
+### 3. Apply the schema
+
+```bash
 pnpm dlx wrangler d1 execute dev-project-dashboard-db --file=./db/schema.sql
 pnpm dlx wrangler d1 execute dev-project-dashboard-db --local --file=./db/schema.sql
+```
+
+### 4. Configure environment
+
+Copy `.env.example` → `.env` and `.dev.vars.example` → `.dev.vars`, then fill in `GITHUB_TOKEN`. Authentication in production is handled by Cloudflare Access (see [Authentication](#authentication)), so no local password is required.
+
+### 5. Run locally
+
+```bash
 pnpm dev
 ```
 
 Development preview: `http://localhost:3000`
 
-For a Cloudflare-compatible production preview, use the OpenNext Cloudflare Worker runtime:
+---
+
+## Preview & deploy
 
 ```bash
-pnpm preview
+pnpm preview   # Cloudflare-parity local preview at http://localhost:8787
+pnpm deploy    # deploy the Worker to Cloudflare
+pnpm build     # standard Next.js production bundle (no server)
 ```
 
-Cloudflare-runtime preview: `http://localhost:8787`
+| Command | What it does |
+|---|---|
+| `pnpm dev` | Fast Next.js dev server with the OpenNext platform bridge + local D1 bindings |
+| `pnpm preview` | Builds with OpenNext and serves the Worker via Wrangler's local runtime at `http://localhost:8787` |
+| `pnpm build` | Standard Next.js production bundle only |
+| `pnpm deploy` | OpenNext build + deploy to Cloudflare Workers |
+| `pnpm test` | Run the Jest test suite |
 
-## 5. Deploy
+---
 
-```bash
-pnpm deploy
-```
+## Authentication
 
-## Preview commands
+Production is protected by **Cloudflare Access**. After Access authenticates a request, it injects a `Cf-Access-User-Email` header, which `src/lib/auth.ts` validates.
 
-> **Note:** `pnpm preview` previously failed due to the edge runtime issue on API routes (see Open Issue #5 in `TODO.md`). This is resolved; use `pnpm dev` for day-to-day local development.
+- All **mutation** endpoints (`POST`/`PATCH`/`DELETE`) check this header via `requireAuth()` before touching the database.
+- **Read** endpoints (dashboard views, lists, search) are left open — single-user by design.
+- **Local development** (`pnpm dev` / `pnpm preview`) bypasses auth, since Cloudflare Access doesn't run locally. The bypass only applies when `NODE_ENV !== 'production'`, so it never triggers on a deployed Worker.
 
-- `pnpm dev` starts the fast Next.js development server with the OpenNext Cloudflare platform bridge and local D1 bindings.
-- `pnpm preview` builds with OpenNext and serves the generated Worker through Wrangler's local Cloudflare runtime at `http://localhost:8787`.
-- `pnpm build` only creates the standard Next.js production bundle. It does not start a server.
+To link projects to repos for GitHub sync, set a project's `github_repo` field to `owner/repo` and pass a GitHub token via the `x-github-token` header (or set `GITHUB_TOKEN` in `.dev.vars` / `wrangler secret put`).
 
-## 6. Phase 1 Status — Functional
+---
 
-Phase 1 CRUD is now wired to D1 (no longer stubs):
-- `GET/POST /api/projects` — list + create projects
-- `GET/PATCH /api/projects/:id` — fetch + update a single project
-- `GET/POST /api/resources` — list (optionally by project) + create resources
-- `PATCH /api/resources/:id` — update a resource
-- `GET /api/search` — search across projects, notes, and resources
-- `POST /api/capture` — quick-capture endpoint (normalizes + dedupes URLs)
+## Known limitations & roadmap
 
-## 7. Phase 2 Status — Functional
+- **Notes can be created but not edited or deleted individually** — the only gap in CRUD parity. Tracked in [`TODO.md`](./TODO.md) as Issue #9.
+- **Phase 4** (AI-assisted development and visual/design review) is next on the roadmap. The AI models are development-time tools only — the deployed dashboard never requires them or their credentials.
 
-> ⚠️ `pnpm preview` previously failed due to `export const runtime = 'edge'` on `deploys/route.ts` and `projects/[slug]/page.tsx`. This has been resolved (see Open Issue #5 in `TODO.md`).
+For the full picture of open work and deferred items, see **[`TODO.md`](./TODO.md)**.
 
-GitHub sync and stale detection is now implemented:
-- `POST /api/sync/github` — sync GitHub activity for all user repos, update project last_activity_at
-- `GET /api/sync/github` — get sync history
-- `POST /api/notes` — create notes for projects
-- GitHub activity feed on project detail pages
-- Stale project detection (14+ days without activity)
-- Activity count badges on project cards
-- Sync status indicator on dashboard
+---
 
-To use GitHub sync:
-1. Create a GitHub Personal Access Token with `repo` scope
-2. Pass it in the `x-github-token` header when calling `POST /api/sync/github`
-3. Link projects to repos by setting `github_repo` field to "owner/repo" format
+## License
 
-## 8. Roadmap Checklist
-
-- [x] Phase 1: Core CRUD, search, dark mode, attention panel
-- [x] Phase 2: GitHub sync, stale flag
-  - [x] Fix `pnpm preview` (remove edge runtime from deploys route & project detail page)
-  - [ ] Add `github_repo` column to DB schema + migration
-  - [ ] Add auth to mutation API routes
-- [x] Phase 3: Bookmarklet capture
-- [ ] Phase 4: AI-assisted development and visual/design review
-- [ ] Phase 5: Polish (Figma panel, reorder, deploy widgets)
-
-## 9. Phase 4 Development Workflow
-
-The three NVIDIA Build models are development tools for building this repository. They are not routed into the deployed dashboard and the dashboard does not require NVIDIA credentials to function.
-
-- **DeepSeek V4 Flash** — primary implementation model for code changes, debugging, API work, and focused repository tasks.
-- **Kimi K2.6** — visual/design model for screenshots, layout critique, interaction review, and visual direction.
-- **Nemotron 3 Super** — architecture and verification model for planning, tradeoff review, test strategy, and final implementation audits.
-
-Each model uses its own development-only API key so usage remains separately trackable. Keep those keys in Zo Secrets or the development environment used to invoke the models. Never add them to the dashboard's `.env.example`, browser bundle, deployed runtime, or source control.
+Private / personal project. Not currently licensed for redistribution.
