@@ -1,6 +1,7 @@
 // src/app/api/notes/route.ts
 import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";
+import { requireAuth } from "@/lib/auth";
 
 /**
  * GET notes for a project
@@ -26,6 +27,9 @@ export async function GET(req: Request) {
  * POST - Create a new note
  */
 export async function POST(req: Request) {
+  const auth = await requireAuth(req);
+  if (auth instanceof Response) return auth;
+
   const body = (await req.json()) as any;
   const { projectId, title, content_md, note_type = "general" } = body;
 

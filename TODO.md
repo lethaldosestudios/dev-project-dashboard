@@ -49,12 +49,18 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - **Details:** `src/app/api/sync/github/route.ts` queries `WHERE github_repo = ?` but `db/schema.sql` and `db/migrations/0001_init.sql` lacked this column.
 - **Fix:** Add `github_repo TEXT` to the `projects` table in `db/schema.sql`; create `db/migrations/0002_add_github_repo.sql`.
 
-### 7. Unauthenticated mutation API routes
-- **Status:** Open — 2026-08-31 (from review)
-- **Details:** `POST`/`PATCH`/`DELETE` on `/api/projects`, `/api/resources`, `/api/notes` lack auth checks. A public Cloudflare Workers URL means anyone can write.
-- **Fix:** Add a central auth helper (Cloudflare Access header / session cookie validation) to all mutation routes.
+### 9. Notes edit/delete capability is missing (feature gap)
+- **Status:** Open — 2026-09-11
+- **Details:** Notes can be created (`POST /api/notes`) but never edited or deleted individually. There is no `src/app/api/notes/[id]/route.ts` (PATCH/DELETE) and no corresponding UI/client code in `src/components/notes-editor.tsx`. Notes are only removed indirectly via cascade when a project is deleted.
+- **Why deferred:** Out of scope for the auth work (TODO #7); no current UI or need. A single-user app can manage via recreating notes, but full CRUD parity with projects/resources would be good eventually.
+- **Fix:** Add `notes/[id]/route.ts` with PATCH/DELETE (auth-protected), plus edit/delete controls in the notes editor.
 
 ## Resolved
+
+### 7. Unauthenticated mutation API routes
+- **Status:** Complete — 2026-09-11
+- **Details:** Added `src/lib/auth.ts` with `requireAuth(request)` (Cloudflare Access `Cf-Access-User-Email` header, with a local-dev bypass when `NODE_ENV !== 'production'`), and wired it into all existing mutation handlers: `POST /api/projects`, `PATCH`/`DELETE /api/projects/[id]`, `POST /api/resources`, `PATCH`/`DELETE /api/resources/[id]`, and `POST /api/notes`.
+- **Verification:** `pnpm build` passes; `pnpm test` passes (2/2 suites). Note: there is no `notes/[id]` route in this codebase (tracked separately as Issue #9), so the 5 existing mutation routes represent the complete security boundary.
 
 ### 4. Missing PostCSS config — Tailwind not compiling
 - **Status:** Complete — 2026-09-10

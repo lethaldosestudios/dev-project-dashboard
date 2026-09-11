@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";
 import { slugify } from "@/lib/utils";
+import { requireAuth } from "@/lib/auth";
 
 const priorities = new Set(["low", "normal", "high"]);
 
@@ -14,6 +15,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireAuth(req);
+  if (auth instanceof Response) return auth;
+
   const body = (await req.json()) as any;
   const { name, description, priority = "normal", stack } = body;
 

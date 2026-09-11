@@ -1,6 +1,7 @@
 // src/app/api/projects/[id]/route.ts
 import { NextResponse } from "next/server";
 import { getDb, nowIso } from "@/lib/db";
+import { requireAuth } from "@/lib/auth";
 
 const statuses = new Set(["active", "paused", "archived"]);
 const priorities = new Set(["low", "normal", "high"]);
@@ -37,6 +38,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireAuth(req);
+  if (auth instanceof Response) return auth;
+
   const { id } = await params;
   const body = (await req.json()) as any;
   const db = await getDb();
@@ -73,7 +77,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   return NextResponse.json({ ok: true, id: existing.id, updates: body });
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireAuth(req);
+  if (auth instanceof Response) return auth;
+
   const { id } = await params;
   const db = await getDb();
   const project = await db.prepare("SELECT id FROM projects WHERE id = ? OR slug = ?").bind(id, id).first<{ id: string }>();

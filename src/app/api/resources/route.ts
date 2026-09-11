@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";
 import { normalizeUrl, extractDomain } from "@/lib/utils";
+import { requireAuth } from "@/lib/auth";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -17,6 +18,9 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireAuth(req);
+  if (auth instanceof Response) return auth;
+
   const body = (await req.json()) as any;
   const { url, title, note, projectId, savedVia = "manual" } = body;
 

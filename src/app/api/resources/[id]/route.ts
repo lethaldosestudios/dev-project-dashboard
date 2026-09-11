@@ -2,8 +2,12 @@
 import { NextResponse } from "next/server";
 import { getDb, nowIso } from "@/lib/db";
 import { normalizeUrl, extractDomain } from "@/lib/utils";
+import { requireAuth } from "@/lib/auth";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireAuth(req);
+  if (auth instanceof Response) return auth;
+
   const { id } = await params;
   const body = (await req.json()) as any;
   const db = await getDb();
@@ -37,7 +41,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   return NextResponse.json({ ok: true, id, updates: body });
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireAuth(req);
+  if (auth instanceof Response) return auth;
+
   const { id } = await params;
   const db = await getDb();
   const existing = await db.prepare("SELECT id FROM resources WHERE id = ?").bind(id).first<{ id: string }>();
