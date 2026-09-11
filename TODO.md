@@ -26,6 +26,14 @@ Running log of issues intentionally deferred during setup, build, and deployment
 
 ## Open Issues
 
+### 9. Notes edit/delete capability is missing (feature gap)
+- **Status:** Open — 2026-09-11
+- **Details:** Notes can be created (`POST /api/notes`) but never edited or deleted individually. There is no `src/app/api/notes/[id]/route.ts` (PATCH/DELETE) and no corresponding UI/client code in `src/components/notes-editor.tsx`. Notes are only removed indirectly via cascade when a project is deleted.
+- **Why deferred:** Out of scope for the auth work (TODO #7); no current UI or need. A single-user app can manage via recreating notes, but full CRUD parity with projects/resources would be good eventually.
+- **Fix:** Add `notes/[id]/route.ts` with PATCH/DELETE (auth-protected), plus edit/delete controls in the notes editor.
+
+## Resolved
+
 ### 1. OpenNext migration
 - **Status:** Complete — 2026-07-29
 - **Details:** Replaced the deprecated `@cloudflare/next-on-pages` adapter with `@opennextjs/cloudflare`, upgraded Next.js to 15.5.21 and Wrangler to 4.115.0, moved the Worker entrypoint to `.open-next/worker.js`, and updated D1 access for OpenNext.
@@ -35,36 +43,26 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - **Status:** Complete — 2026-07-29
 - **Details:** Dynamic route params now use the Next 15 promise form. The app remains single-user and keeps its existing App Router behavior.
 
-### 3. Local D1 initialization
-- **Status:** Documented and verified
-- **Details:** The local database must be initialized with `pnpm dlx wrangler d1 execute dev-project-dashboard-db --local --file=./db/schema.sql` before opening D1-backed pages.
+### 3. Local D1 initialization (documented)
+- **Status:** Complete — 2026-07-29
+- **Details:** Local DB must be initialized before opening D1-backed pages. Command: `pnpm dlx wrangler d1 execute dev-project-dashboard-db --local --file=./db/schema.sql`.
+
+### 4. Missing PostCSS config — Tailwind not compiling
+- **Status:** Complete — 2026-09-10
+- **Details:** `postcss.config.mjs` now exists and Tailwind compiles correctly.
 
 ### 5. `pnpm preview` fails — Edge runtime on API routes
-- **Status:** Open — 2026-09-10
-- **Details:** `src/app/api/sync/deploys/route.ts` and `src/app/projects/[slug]/page.tsx` exported `export const runtime = 'edge';`. OpenNext Cloudflare requires edge runtime functions to be defined separately (via middleware or a separate Worker entry), not co-located in `app/api/`. `pnpm preview` failed with a "cannot use the edge runtime" error.
-- **Fix:** Remove `export const runtime = 'edge';` from both files. Standard Workers runtime is sufficient.
+- **Status:** Complete — 2026-09-10
+- **Details:** Removed `export const runtime = 'edge';` from `src/app/api/sync/deploys/route.ts` and `src/app/projects/[slug]/page.tsx`. Standard Workers runtime is sufficient.
 
 ### 6. Missing `github_repo` column in DB schema
-- **Status:** Open — 2026-08-31 (from review)
-- **Details:** `src/app/api/sync/github/route.ts` queries `WHERE github_repo = ?` but `db/schema.sql` and `db/migrations/0001_init.sql` lacked this column.
-- **Fix:** Add `github_repo TEXT` to the `projects` table in `db/schema.sql`; create `db/migrations/0002_add_github_repo.sql`.
-
-### 9. Notes edit/delete capability is missing (feature gap)
-- **Status:** Open — 2026-09-11
-- **Details:** Notes can be created (`POST /api/notes`) but never edited or deleted individually. There is no `src/app/api/notes/[id]/route.ts` (PATCH/DELETE) and no corresponding UI/client code in `src/components/notes-editor.tsx`. Notes are only removed indirectly via cascade when a project is deleted.
-- **Why deferred:** Out of scope for the auth work (TODO #7); no current UI or need. A single-user app can manage via recreating notes, but full CRUD parity with projects/resources would be good eventually.
-- **Fix:** Add `notes/[id]/route.ts` with PATCH/DELETE (auth-protected), plus edit/delete controls in the notes editor.
-
-## Resolved
+- **Status:** Complete — 2026-09-10
+- **Details:** Added `github_repo TEXT` to the `projects` table in `db/schema.sql`; created `db/migrations/0002_add_github_repo.sql`.
 
 ### 7. Unauthenticated mutation API routes
 - **Status:** Complete — 2026-09-11
 - **Details:** Added `src/lib/auth.ts` with `requireAuth(request)` (Cloudflare Access `Cf-Access-User-Email` header, with a local-dev bypass when `NODE_ENV !== 'production'`), and wired it into all existing mutation handlers: `POST /api/projects`, `PATCH`/`DELETE /api/projects/[id]`, `POST /api/resources`, `PATCH`/`DELETE /api/resources/[id]`, and `POST /api/notes`.
 - **Verification:** `pnpm build` passes; `pnpm test` passes (2/2 suites). Note: there is no `notes/[id]` route in this codebase (tracked separately as Issue #9), so the 5 existing mutation routes represent the complete security boundary.
-
-### 4. Missing PostCSS config — Tailwind not compiling
-- **Status:** Complete — 2026-09-10
-- **Details:** `postcss.config.mjs` now exists and Tailwind compiles correctly.
 
 ### 8. Jest configuration broken
 - **Status:** Complete — 2026-09-10
