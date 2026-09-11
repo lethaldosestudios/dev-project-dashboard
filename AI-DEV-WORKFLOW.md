@@ -1,8 +1,12 @@
-# Phase 4 Plan — AI-Assisted Development Workflow
+# AI Development Workflow
 
 **Date:** 2026-07-29
 **Project:** `dev-project-dashboard`
 **Status:** Active plan
+
+> **Note:** AI-assisted *development* is a dev-time workflow used to build this
+> repository — not a product phase of the dashboard. See `README.md` / `TODO.md`
+> for the roadmap (Phase 4 = Polish & Iterate, Phase 5 = Optional AI features).
 
 ## Decision
 
@@ -54,13 +58,10 @@ Use as the architecture and verification model for:
 
 ## Secret handling
 
-Use one separate development-only NVIDIA API key per model for usage tracking:
+Use one development-only NVIDIA API key per coding assistant app for any/all available free-endpoint models:
 
-- `NVIDIA_BUILD_DEEPSEEK_API_KEY`
-- `NVIDIA_BUILD_KIMI_API_KEY`
-- `NVIDIA_BUILD_NEMOTRON_API_KEY`
 
-Store these in Zo Secrets or the development environment used by the model-invocation workflow. Do not place them in the dashboard's `.env.example`, application runtime, browser bundle, Git history, or public deployment.
+Store these in encrypted/locked file (only Porter has access) or the development environment used by the model-invocation workflow. Do not place them in the dashboard's `.env.example`, application runtime, browser bundle, Git history, or public deployment.
 
 ## Guardrails
 
@@ -72,4 +73,4 @@ Store these in Zo Secrets or the development environment used by the model-invoc
 
 ## Next implementation target
 
-Continue with the next user-visible dashboard milestone after Phase 3. Use the three-model workflow above to plan and implement it. Do not create Phase 4 runtime AI routes unless the product requirement explicitly changes to an in-app AI feature.
+Continue with the next user-visible dashboard milestone. Use the three-model workflow above to plan and implement it. Do not create runtime AI routes in the shipped app unless the product requirement explicitly changes to an in-app AI feature (see Phase 5 — Optional AI features in `README.md` / `TODO.md`).

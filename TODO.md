@@ -16,7 +16,7 @@ Running log of issues intentionally deferred during setup, build, and deployment
 
 ### Phase 5 — Optional AI features
 - **Status:** Deferred (possible future direction)
-- Product-facing AI capabilities are *not* committed work. This is separate from the AI-assisted *development* workflow (see `docs/plans/2026-07-29-ai-assisted-development-workflow.md`), which is a dev-time aid only and never ships into the app.
+- Product-facing AI capabilities are *not* committed work. This is separate from the AI-assisted *development* workflow (see `AI-DEV-WORKFLOW.md`), which is a dev-time aid only and never ships into the app.
 
 ### Copilot code review instructions
 - **Status:** Complete — 2026-07-30
@@ -31,6 +31,16 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - **Details:** Notes can be created (`POST /api/notes`) but never edited or deleted individually. There is no `src/app/api/notes/[id]/route.ts` (PATCH/DELETE) and no corresponding UI/client code in `src/components/notes-editor.tsx`. Notes are only removed indirectly via cascade when a project is deleted.
 - **Why deferred:** Out of scope for the auth work (TODO #7); no current UI or need. A single-user app can manage via recreating notes, but full CRUD parity with projects/resources would be good eventually.
 - **Fix:** Add `notes/[id]/route.ts` with PATCH/DELETE (auth-protected), plus edit/delete controls in the notes editor.
+
+### 10. Unresolved findings from `docs/reviews/codebase-review.md` (2026-08-31)
+- **Status:** Open — 2026-09-11
+- **Details:** The 2026-08-31 codebase review flagged several items. Most are since resolved (edge runtime #5, Jest config #8, `github_repo` schema #6, auth #7, PostCSS #4). The following remain open:
+  - 🔴 CRITICAL: SQL injection via template-literal column construction — `src/app/api/projects/[id]/route.ts` (line 58) and `src/app/api/resources/[id]/route.ts` (line 33) build `UPDATE ... SET ${updates.join(", ")}` dynamically. Column names are allowlisted today, but this breaks the parameterized-query guarantee and could open injection vectors if keys change.
+  - 🟡 IMPORTANT: `as any` body parsing without `try/catch`, plus unbounded field lengths — `projects/route.ts`, `resources/route.ts`, `notes/route.ts`, `projects/[id]/route.ts` (the `POST /api/capture` pattern is not yet applied everywhere).
+  - 🟢 SUGGESTION: hardcoded `REPO_TO_PROJECT` mapping in `src/lib/github.ts` should migrate to DB-backed project settings.
+  - 🟢 SUGGESTION: replace `as any` on route params / D1 results with typed shapes from `src/types/index.ts`.
+- **Why deferred:** Noted here for tracking; deliberately left out of the docs decoupling task. No active bug reports, but the critical query-construction item should be addressed before any new dynamic-column work.
+- **Fix:** Convert `${updates.join(", ")}` to explicit column-by-column updates (matching `AGENTS.md` parameterized-query mandate); apply the `capture/route.ts` validation pattern to the other mutation routes; migrate `REPO_TO_PROJECT` to DB settings.
 
 ## Resolved
 
