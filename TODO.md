@@ -10,13 +10,13 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - Added bookmarklet installation UI under Settings and dashboard navigation links.
 - Hardened `POST /api/capture` with URL, field-length, saved-via, and active-project validation.
 
-### Phase 4 — AI-assisted development and visual/design review
+### Phase 4 — Polish & Iterate
 - **Status:** Next
-- Use `docs/plans/2026-07-29-ai-assisted-development-workflow.md`.
-- DeepSeek handles primary implementation and debugging.
-- Kimi handles visual design critique and screenshot review.
-- Nemotron handles architecture, planning, verification, and test strategy.
-- These models are development tools only. The dashboard must not require NVIDIA credentials or runtime model routes.
+- Visual and functional refinements plus additions surfaced during real use. No committed scope yet — to be planned as concrete items.
+
+### Phase 5 — Optional AI features
+- **Status:** Deferred (possible future direction)
+- Product-facing AI capabilities are *not* committed work. This is separate from the AI-assisted *development* workflow (see `docs/plans/2026-07-29-ai-assisted-development-workflow.md`), which is a dev-time aid only and never ships into the app.
 
 ### Copilot code review instructions
 - **Status:** Complete — 2026-07-30

@@ -24,7 +24,8 @@ It started as a "new-tab project dashboard" itch: bookmarks and notes were sprea
 | Phase 1 — Core CRUD, search, dark mode, attention panel | ✅ Complete |
 | Phase 2 — GitHub sync + stale detection | ✅ Complete |
 | Phase 3 — Bookmarklet quick capture | ✅ Complete |
-| Phase 4 — AI-assisted development & visual/design review | 🔄 Next |
+| Phase 4 — Polish & Iterate | 🔄 Next |
+| Phase 5 — Optional AI features | ⏳ Later |
 
 The app builds, previews, and deploys cleanly. See [`TODO.md`](./TODO.md) for the single known feature gap (notes edit/delete) and any deferred work.
 
@@ -194,7 +195,8 @@ To link projects to repos for GitHub sync, set a project's `github_repo` field t
 ## Known limitations & roadmap
 
 - **Notes can be created but not edited or deleted individually** — the only gap in CRUD parity. Tracked in [`TODO.md`](./TODO.md) as Issue #9.
-- **Phase 4** (AI-assisted development and visual/design review) is next on the roadmap. The AI models are development-time tools only — the deployed dashboard never requires them or their credentials.
+- **Phase 4** (Polish & Iterate) is next on the roadmap — visual and functional refinements plus additions surfaced during real use.
+- **Phase 5** (Optional AI features) is a possible *future product direction*, not a committed milestone. Distinct from the AI-assisted *development* workflow used to build this repo, which is a dev-time aid only and never ships into the app.
 
 For the full picture of open work and deferred items, see **[`TODO.md`](./TODO.md)**.
 
