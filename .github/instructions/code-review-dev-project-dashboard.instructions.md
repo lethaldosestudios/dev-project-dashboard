@@ -33,27 +33,28 @@ Respond in **English**.
   for anything that loops and queries per-iteration (see `sync/github/route.ts`'s
   per-repo, per-event query pattern as the existing baseline — new code should not make
   this pattern worse without reason).
-- **No test suite exists yet.** Don't block merges solely for "missing tests" — see
-  Testing Standards below for what to actually flag.
+- **A minimal Jest suite exists** (ts-jest + @testing-library/react, 2 component
+  suites). Don't block merges solely for "missing tests" — see Testing Standards below
+  for what to actually flag.
 - **Phased build (see `README.md` and `TODO.md`).** Phases 1–3 (CRUD, search, GitHub
-  sync/stale detection, bookmarklet capture) are complete. Phase 4
-  (`docs/plans/2026-07-29-ai-assisted-development-workflow.md`) is AI-assisted dev
-  tooling — **development-time only**, not a runtime feature. Phase 5 is polish. When
+  sync/stale detection, bookmarklet capture) are complete. Phase 4 is "Polish &
+  Iterate" (next) and Phase 5 is "Optional AI features" (deferred). AI-assisted
+  development (`AI-DEV-WORKFLOW.md`) is a separate, orthogonal dev-time workflow used
+  to build the repo — **not** a roadmap phase and **not** a runtime feature. When
   reviewing a PR, check that its scope matches the phase it claims to belong to, and
   flag scope creep into explicitly-deferred features (browser extension, AI chat over
-  projects, drag-to-reorder, Vercel deploy widgets — see README §1 "Explicitly out of
-  MVP").
+  projects, drag-to-reorder, Vercel deploy widgets).
 
 ## Review Priorities
 
 ### 🔴 CRITICAL (Block merge)
-- **Secrets in code or bundle**: `GITHUB_PAT`, `DASHBOARD_PASSWORD`, or the Phase 4
+- **Secrets in code or bundle**: `GITHUB_PAT`, `DASHBOARD_PASSWORD`, or the dev-time
   NVIDIA model API keys (DeepSeek/Kimi/Nemotron) hardcoded, committed, logged, added to
   `.env.example` with a real value, or reachable from client-side/browser bundle code.
-  Per `README.md` §9, the Phase 4 model keys must **never** appear in `.env.example`,
-  the browser bundle, the deployed runtime, or source control — treat any PR that wires
-  those keys into `src/app/**` or `src/lib/**` (i.e., into the shipped app rather than a
-  dev-only script/tool) as critical.
+  Per `AI-DEV-WORKFLOW.md`, the dev-time model keys must **never** appear in
+  `.env.example`, the browser bundle, the deployed runtime, or source control — treat
+  any PR that wires those keys into `src/app/**` or `src/lib/**` (i.e., into the shipped
+  app rather than a dev-only script/tool) as critical.
 - **SQL injection / raw string interpolation into D1 queries**: any `db.prepare(...)`
   call built with template-literal interpolation of request input instead of `?`
   placeholders + `.bind(...)`. The existing codebase is consistently parameterized
@@ -136,8 +137,9 @@ Respond in **English**.
 
 ## Security Review
 
-- **Sensitive data**: no `GITHUB_PAT`, `DASHBOARD_PASSWORD`, session secrets, or Phase 4
-  model API keys in code, logs, error messages, or client-visible responses.
+- **Sensitive data**: no `GITHUB_PAT`, `DASHBOARD_PASSWORD`, session secrets, or
+  dev-time NVIDIA model API keys in code, logs, error messages, or client-visible
+  responses.
 - **Input validation**: all request bodies parsed defensively (wrap `req.json()` in
   try/catch per the `capture/route.ts` pattern), all string inputs trimmed and
   length-checked, all enum-like fields checked against an explicit allowlist.
@@ -157,8 +159,9 @@ Respond in **English**.
 
 ## Testing Standards
 
-There is no test suite in this repo today, so:
-- **Don't block a PR purely for "no tests."**
+The repo has a minimal Jest suite (ts-jest + @testing-library/react, 2 component
+suites) — treat it as a light safety net, not full coverage. So:
+- **Don't block a PR purely for "no tests" or low coverage.**
 - **Do flag** silent failure modes in critical paths — the sync job, capture dedupe
   logic, and validation logic are the highest-value places for a bug to hide
   unnoticed given there's no automated safety net. If a PR touches
@@ -197,10 +200,11 @@ There is no test suite in this repo today, so:
   notes the repo→project mapping "should eventually come from project settings in the
   DB" — the route already has a DB-lookup fallback. Don't add new features that
   deepen the hardcoded-mapping approach instead of migrating toward the DB-backed one.
-- **Respect the phase boundary**: Phase 4's AI development tooling is explicitly a
-  dev-time aid, not a dashboard feature — code introducing runtime routes, UI, or
-  dependencies on the NVIDIA models inside `src/app/**` should be questioned unless the
-  PR is deliberately expanding Phase 4's scope into the product.
+- **Respect the phase boundary**: the AI development tooling (see `AI-DEV-WORKFLOW.md`)
+  is explicitly a dev-time aid, not a dashboard feature — code introducing runtime
+  routes, UI, or dependencies on the NVIDIA models inside `src/app/**` should be
+  questioned unless the PR is deliberately implementing Phase 5 "Optional AI features"
+  as an in-app product direction.
 
 ## Documentation Standards
 
@@ -290,7 +294,7 @@ const body = (await req.json()) as { name?: string; priority?: string };
 - [ ] No dead code, commented-out code, or untracked TODOs (untracked = not in `TODO.md`)
 
 ### Security
-- [ ] No secrets (GitHub PAT, dashboard password, Phase 4 model keys) in code, logs, or `.env.example`
+- [ ] No secrets (GitHub PAT, dashboard password, dev-time NVIDIA model keys) in code, logs, or `.env.example`
 - [ ] All D1 queries use `?` + `.bind()`, never string interpolation
 - [ ] All request bodies validated (type-checked, trimmed, length-limited, enum-checked)
 - [ ] URLs validated for scheme (`http`/`https` only) before storage or use
@@ -327,5 +331,5 @@ const body = (await req.json()) as { name?: string; priority?: string };
 - **Package manager**: pnpm
 - **Deploy**: `pnpm deploy` (OpenNext build → Cloudflare Workers)
 - **Local dev**: `pnpm dev` (Next dev server) or `pnpm preview` (full Cloudflare Workers runtime via Wrangler, `localhost:8787`)
-- **Testing**: none configured — see Testing Standards above
+- **Testing**: minimal Jest suite (ts-jest + @testing-library/react) — see Testing Standards above
 - **Scale/cost target**: $0–1/month infra, single user (per `README.md` §1)

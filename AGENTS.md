@@ -31,6 +31,18 @@ to every comment you leave.
   to `export const runtime = 'edge'` on API routes (tracked in TODO.md #5);
   that issue is resolved.
 
+### `docs/` directory — owner's private notes area
+
+- `docs/` (and its `plans/` and `reviews/` subfolders) is the owner's personal
+  / organizing space: ad-hoc plans, scratch ideas, and informal code reviews.
+- Do **not** treat `docs/` content as canonical project spec or source of
+  truth. The repo-root files `README.md`, `TODO.md`, and `AGENTS.md` are the
+  canonical living status docs.
+- Do **not** write into `docs/` unless the owner explicitly directs it.
+- Exception: `HANDOFF.md` at the repo root (not inside `docs/`) exists by
+  design to transfer context between AI sessions. Even so, prefer
+  `TODO.md` / `README.md` / `AGENTS.md` as the canonical status docs.
+
 ### Code Style & Anti-Patterns
 
 Enforce these strict patterns for code inspection:

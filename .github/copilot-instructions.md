@@ -46,7 +46,8 @@ everywhere, including files not covered by a path-specific instruction file.
 
 ## Testing Standards
 
-- This repository has no automated test suite yet — do not flag "missing
-  tests" as a blocking issue
-- Do flag unhandled edge cases in code paths that have no test coverage to
-  catch them (sync jobs, capture/dedupe logic, validation logic)
+- This repository has a minimal automated test suite (Jest + ts-jest +
+  @testing-library/react) — do not flag "missing tests" or limited coverage
+  as a blocking issue
+- Do flag unhandled edge cases in code paths that have little or no test
+  coverage to catch them (sync jobs, capture/dedupe logic, validation logic)
