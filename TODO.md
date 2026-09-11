@@ -54,16 +54,16 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - **Details:** `POST`/`PATCH`/`DELETE` on `/api/projects`, `/api/resources`, `/api/notes` lack auth checks. A public Cloudflare Workers URL means anyone can write.
 - **Fix:** Add a central auth helper (Cloudflare Access header / session cookie validation) to all mutation routes.
 
-### 8. Jest configuration broken
-- **Status:** Open — 2026-08-31 (from review)
-- **Details:** `jest.setup.ts` uses `import` syntax but Jest runs as CommonJS → `SyntaxError`.
-- **Fix:** Update `jest.config.cjs` to transform `jest.setup.ts` via ts-jest/babel-jest, or convert it to `require()`.
-
 ## Resolved
 
 ### 4. Missing PostCSS config — Tailwind not compiling
 - **Status:** Complete — 2026-09-10
 - **Details:** `postcss.config.mjs` now exists and Tailwind compiles correctly.
+
+### 8. Jest configuration broken
+- **Status:** Complete — 2026-09-10
+- **Details:** Switched `jest.config.cjs` from `babel-jest` to `ts-jest` with `jsx: 'react-jsx'` (the root `tsconfig.json` uses `jsx: "preserve"`, which left JSX untransformed and caused `SyntaxError`). Also added `modulePathIgnorePatterns` for `.next/` and `.open-next/` to silence haste-map naming collisions.
+- **Verification:** `pnpm test` passes — 2 test suites (`project-card.test.tsx`, `header.test.tsx`) run cleanly with no `SyntaxError`.
 
 ## Deferred Work Log
 

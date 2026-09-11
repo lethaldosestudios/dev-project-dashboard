@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Header renders and matches snapshot 1`] = `
+<DocumentFragment>
+  <header
+    class="flex justify-between items-start mb-6"
+    role="banner"
+  >
+    <div>
+      <h1
+        class="text-3xl font-bold text-white mb-1"
+      >
+        Test Title
+      </h1>
+      <p
+        class="text-white/50 text-sm"
+      >
+        A subtitle
+      </p>
+    </div>
+    <div
+      class="flex items-center gap-3"
+    >
+      <button>
+        Action
+      </button>
+    </div>
+  </header>
+</DocumentFragment>
+`;

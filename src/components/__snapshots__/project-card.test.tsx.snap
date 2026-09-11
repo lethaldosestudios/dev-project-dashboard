@@ -1,0 +1,66 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`ProjectCard renders and matches snapshot 1`] = `
+<DocumentFragment>
+  <a
+    class="block group focus-ring"
+    href="/projects/sample"
+  >
+    <div
+      class="rounded-2xl p-6 transition-all duration-300 bg-glass-900/60 backdrop-blur-2xl border shadow-glow-blue/50 hover:bg-glass-700/60 hover:shadow-glass-lg hover:translate-y-[-2px] h-full glass-interactive border-white/5 hover:border-white/10"
+    >
+      <div
+        class="flex justify-between items-start mb-3"
+      >
+        <div
+          class="flex-1 min-w-0"
+        >
+          <h3
+            class="font-medium text-white truncate group-hover:text-accent-primary transition-colors"
+          >
+            Sample Project
+          </h3>
+          <div
+            class="flex items-center gap-2 mt-1"
+          >
+            <span
+              class="text-xs text-accent-emerald"
+            >
+              active
+            </span>
+            <span
+              class="text-xs text-accent-cyan"
+            >
+              normal
+            </span>
+          </div>
+        </div>
+        <span
+          class="text-xs bg-accent-primary/20 text-accent-primary px-2 py-1 rounded-full"
+        >
+          +3
+        </span>
+      </div>
+      <p
+        class="text-sm text-white/60 line-clamp-2 mb-3"
+      >
+        A test project
+      </p>
+      <div
+        class="flex items-center justify-between text-xs text-white/40"
+      >
+        <span
+          class="text-white/50"
+        >
+          Active today
+        </span>
+        <span
+          class="text-white/50"
+        >
+          Next.js
+        </span>
+      </div>
+    </div>
+  </a>
+</DocumentFragment>
+`;
