@@ -63,9 +63,9 @@ to **`AGENTS.md`** (the AI-facing instruction file at repo root) stating somethi
   scratch ideas).
 - AI agents should **not** treat `docs/` content as canonical project spec or source of truth.
 - AI agents should **not write** into `docs/` unless the owner explicitly directs it.
-- Note: the `docs/handoff-ai-phase-decoupling.md` file (this one) is an exception-by-design —
-  but even so, prefer `TODO.md`/`README.md`/`AGENTS.md` (repo root) as the canonical living
-  status docs.
+- Note: `HANDOFF.md` at the repo root (this file) is an exception-by-design — it exists to
+  transfer context between AI sessions. Even so, prefer `TODO.md`/`README.md`/`AGENTS.md`
+  (repo root) as the canonical living status docs.
 
 ### 3. Update `.github/instructions/code-review-dev-project-dashboard.instructions.md`
 
