@@ -33,14 +33,14 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - **Fix:** Add `notes/[id]/route.ts` with PATCH/DELETE (auth-protected), plus edit/delete controls in the notes editor.
 
 ### 10. Unresolved findings from `archives/codebase-review.md` (2026-08-31)
-- **Status:** Open — 2026-09-11
-- **Details:** The 2026-08-31 codebase review flagged several items. Most are since resolved (edge runtime #5, Jest config #8, `github_repo` schema #6, auth #7, PostCSS #4). The following remain open:
-  - 🔴 CRITICAL: SQL injection via template-literal column construction — `src/app/api/projects/[id]/route.ts` (line 58) and `src/app/api/resources/[id]/route.ts` (line 33) build `UPDATE ... SET ${updates.join(", ")}` dynamically. Column names are allowlisted today, but this breaks the parameterized-query guarantee and could open injection vectors if keys change.
-  - 🟡 IMPORTANT: `as any` body parsing without `try/catch`, plus unbounded field lengths — `projects/route.ts`, `resources/route.ts`, `notes/route.ts`, `projects/[id]/route.ts` (the `POST /api/capture` pattern is not yet applied everywhere).
+- **Status:** Partially resolved — 2026-09-12 (2 open 🟢 items remain)
+- **Details:** The 2026-08-31 codebase review flagged several items. Most are now resolved. The two remaining suggestions are tracked below.
+  - ✅ Resolved (commits `12f5013` + `d0cae7f`): 🔴 CRITICAL SQL-injection-via-template-literal in `projects/[id]/route.ts` and `resources/[id]/route.ts` — replaced `${updates.join(", ")}` with explicit column-by-column UPDATEs where every value is a bound `?` parameter.
+  - ✅ Resolved (commit `d0cae7f`): 🟡 `as any` body parsing without `try/catch` + unbounded field lengths — the `capture/route.ts` validation pattern (try/catch JSON parse, `typeof`/trim checks, explicit length limits) is now applied across `projects`, `resources`, and `notes` mutation routes.
   - 🟢 SUGGESTION: hardcoded `REPO_TO_PROJECT` mapping in `src/lib/github.ts` should migrate to DB-backed project settings.
-  - 🟢 SUGGESTION: replace `as any` on route params / D1 results with typed shapes from `src/types/index.ts`.
-- **Why deferred:** Noted here for tracking; deliberately left out of the docs decoupling task. No active bug reports, but the critical query-construction item should be addressed before any new dynamic-column work.
-- **Fix:** Convert `${updates.join(", ")}` to explicit column-by-column updates (matching `AGENTS.md` parameterized-query mandate); apply the `capture/route.ts` validation pattern to the other mutation routes; migrate `REPO_TO_PROJECT` to DB settings.
+  - 🟢 SUGGESTION: replace `as any` on D1 results with typed shapes from `src/types/index.ts` (route params already typed; body parsing resolved above).
+- **Why deferred:** The 🟢 items are cosmetic/dead-code cleanup and are not worth acting on until GitHub sync becomes a headline feature (`REPO_TO_PROJECT` is an empty map with an existing `github_repo` DB fallback; the result-cast typing is style-only). The 🔴/🟡 items were resolved in this session.
+- **Remaining fix:** Migrate `REPO_TO_PROJECT` to DB-backed project settings; replace `as any` on D1 result casts with typed shapes from `src/types/index.ts`.
 
 ## Resolved
 
