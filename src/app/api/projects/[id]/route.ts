@@ -42,38 +42,85 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (auth instanceof Response) return auth;
 
   const { id } = await params;
-  const body = (await req.json()) as any;
+  let body: Record<string, unknown>;
+  try {
+    body = (await req.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Request body must be valid JSON" }, { status: 400 });
+  }
+
   const db = await getDb();
-  const existing = await db.prepare("SELECT id, status FROM projects WHERE id = ? OR slug = ?").bind(id, id).first<{ id: string; status: string }>();
+  const existing = await db.prepare("SELECT * FROM projects WHERE id = ? OR slug = ?").bind(id, id).first<{ id: string; status: string }>();
   if (!existing) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
+  // No updatable field present in the body.
   const allowed = ["name", "description", "status", "priority", "stack", "last_activity_at"] as const;
-  const updates: string[] = [];
-  const values: unknown[] = [];
-  for (const key of allowed) {
-    if (!(key in body)) continue;
-    if (key === "name") {
-      if (typeof body[key] !== "string" || !body[key].trim() || body[key].trim().length > 120) return NextResponse.json({ error: "name must be 1-120 characters" }, { status: 400 });
-      values.push(body[key].trim());
-    } else if (key === "status") {
-      if (!statuses.has(body[key])) return NextResponse.json({ error: "status must be active, paused, or archived" }, { status: 400 });
-      values.push(body[key]);
-    } else if (key === "priority") {
-      if (!priorities.has(body[key])) return NextResponse.json({ error: "priority must be low, normal, or high" }, { status: 400 });
-      values.push(body[key]);
-    } else {
-      values.push(body[key]);
+  if (!allowed.some((key) => key in body)) {
+    return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+  }
+
+  const name = "name" in body ? body.name : undefined;
+  if (name !== undefined) {
+    if (typeof name !== "string" || !name.trim() || name.trim().length > 120) {
+      return NextResponse.json({ error: "name must be 1-120 characters" }, { status: 400 });
     }
-    updates.push(`${key} = ?`);
   }
-  if ("status" in body) {
-    updates.push("archived_at = ?");
-    values.push(body.status === "archived" ? nowIso() : null);
+
+  const status = "status" in body ? body.status : undefined;
+  if (status !== undefined) {
+    if (typeof status !== "string" || !statuses.has(status)) {
+      return NextResponse.json({ error: "status must be active, paused, or archived" }, { status: 400 });
+    }
   }
-  if (updates.length === 0) return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
-  updates.push("updated_at = ?");
-  values.push(nowIso(), existing.id);
-  await db.prepare(`UPDATE projects SET ${updates.join(", ")} WHERE id = ?`).bind(...values).run();
+
+  const priority = "priority" in body ? body.priority : undefined;
+  if (priority !== undefined) {
+    if (typeof priority !== "string" || !priorities.has(priority)) {
+      return NextResponse.json({ error: "priority must be low, normal, or high" }, { status: 400 });
+    }
+  }
+
+  const description = "description" in body ? body.description : undefined;
+  if (description !== undefined && description !== null && typeof description !== "string") {
+    return NextResponse.json({ error: "description must be a string" }, { status: 400 });
+  }
+  if (typeof description === "string" && description.length > 5000) {
+    return NextResponse.json({ error: "description must be 5000 characters or fewer" }, { status: 400 });
+  }
+
+  const stack = "stack" in body ? body.stack : undefined;
+  if (stack !== undefined && stack !== null && typeof stack !== "string") {
+    return NextResponse.json({ error: "stack must be a string" }, { status: 400 });
+  }
+  if (typeof stack === "string" && stack.length > 5000) {
+    return NextResponse.json({ error: "stack must be 5000 characters or fewer" }, { status: 400 });
+  }
+
+  const last_activity_at = "last_activity_at" in body ? body.last_activity_at : undefined;
+  if (last_activity_at !== undefined && last_activity_at !== null && typeof last_activity_at !== "string") {
+    return NextResponse.json({ error: "last_activity_at must be a string" }, { status: 400 });
+  }
+
+  // Explicit column-by-column update — every value is a bound parameter.
+  await db
+    .prepare(
+      `UPDATE projects
+       SET name = ?, description = ?, status = ?, priority = ?, stack = ?, last_activity_at = ?, archived_at = ?, updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      typeof name === "string" ? name.trim() : null,
+      typeof description === "string" ? description : null,
+      typeof status === "string" ? status : null,
+      typeof priority === "string" ? priority : null,
+      typeof stack === "string" ? stack : null,
+      typeof last_activity_at === "string" ? last_activity_at : null,
+      status === "archived" ? nowIso() : null,
+      nowIso(),
+      existing.id
+    )
+    .run();
+
   return NextResponse.json({ ok: true, id: existing.id, updates: body });
 }
 
