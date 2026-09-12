@@ -21,17 +21,30 @@ export async function POST(req: Request) {
   const auth = await requireAuth(req);
   if (auth instanceof Response) return auth;
 
-  const body = (await req.json()) as any;
-  const { url, title, note, projectId, savedVia = "manual" } = body;
+  let body: Record<string, unknown>;
+  try {
+    body = (await req.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Request body must be valid JSON" }, { status: 400 });
+  }
 
-  if (!url || typeof url !== "string") {
+  const url = typeof body.url === "string" ? body.url.trim() : "";
+  const title = typeof body.title === "string" ? body.title : null;
+  const note = typeof body.note === "string" ? body.note : null;
+  const projectId = typeof body.projectId === "string" && body.projectId.trim() ? body.projectId.trim() : null;
+  const savedVia = typeof body.savedVia === "string" ? body.savedVia : "manual";
+
+  if (!url) {
     return NextResponse.json({ error: "url is required" }, { status: 400 });
   }
   if (url.length > 2000) {
     return NextResponse.json({ error: "url must be 2000 characters or fewer" }, { status: 400 });
   }
-  if (projectId !== undefined && projectId !== null && typeof projectId !== "string") {
-    return NextResponse.json({ error: "projectId must be a string" }, { status: 400 });
+  if (title && title.length > 500) {
+    return NextResponse.json({ error: "title must be 500 characters or fewer" }, { status: 400 });
+  }
+  if (note && note.length > 5000) {
+    return NextResponse.json({ error: "note must be 5000 characters or fewer" }, { status: 400 });
   }
   if (!["manual", "bookmarklet", "extension", "ai"].includes(savedVia)) {
     return NextResponse.json({ error: "savedVia is invalid" }, { status: 400 });

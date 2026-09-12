@@ -30,15 +30,33 @@ export async function POST(req: Request) {
   const auth = await requireAuth(req);
   if (auth instanceof Response) return auth;
 
-  const body = (await req.json()) as any;
-  const { projectId, title, content_md, note_type = "general" } = body;
+  let body: Record<string, unknown>;
+  try {
+    body = (await req.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Request body must be valid JSON" }, { status: 400 });
+  }
 
-  if (!projectId || typeof projectId !== "string") {
+  const projectId = typeof body.projectId === "string" ? body.projectId.trim() : "";
+  const title = typeof body.title === "string" ? body.title.trim() || null : null;
+  const content_md = typeof body.content_md === "string" ? body.content_md : "";
+  const note_type = typeof body.note_type === "string" ? body.note_type : "general";
+
+  if (!projectId) {
     return NextResponse.json({ error: "projectId is required" }, { status: 400 });
   }
 
-  if (!content_md || typeof content_md !== "string") {
+  if (!content_md) {
     return NextResponse.json({ error: "content_md is required" }, { status: 400 });
+  }
+  if (content_md.length > 50000) {
+    return NextResponse.json({ error: "content_md must be 50000 characters or fewer" }, { status: 400 });
+  }
+  if (title && title.length > 500) {
+    return NextResponse.json({ error: "title must be 500 characters or fewer" }, { status: 400 });
+  }
+  if (note_type.length > 50) {
+    return NextResponse.json({ error: "note_type must be 50 characters or fewer" }, { status: 400 });
   }
 
   const db = await getDb();
