@@ -19,6 +19,7 @@ export function ProjectDialog({ mode, project, trigger }: ProjectDialogProps) {
   const [name, setName] = useState(project?.name ?? "");
   const [description, setDescription] = useState(project?.description ?? "");
   const [stack, setStack] = useState(project?.stack ?? "");
+  const [githubRepo, setGithubRepo] = useState(project?.github_repo ?? "");
   const [priority, setPriority] = useState<Project["priority"]>(project?.priority ?? "normal");
   const [status, setStatus] = useState<Project["status"]>(project?.status ?? "active");
   const [error, setError] = useState("");
@@ -29,6 +30,7 @@ export function ProjectDialog({ mode, project, trigger }: ProjectDialogProps) {
     setName(project?.name ?? "");
     setDescription(project?.description ?? "");
     setStack(project?.stack ?? "");
+    setGithubRepo(project?.github_repo ?? "");
     setPriority(project?.priority ?? "normal");
     setStatus(project?.status ?? "active");
     setError("");
@@ -62,6 +64,7 @@ export function ProjectDialog({ mode, project, trigger }: ProjectDialogProps) {
           name: trimmedName,
           description: description.trim() || null,
           stack: stack.trim() || null,
+          github_repo: githubRepo.trim() || null,
           priority,
           ...(mode === "edit" ? { status } : {}),
         }),
@@ -134,6 +137,17 @@ export function ProjectDialog({ mode, project, trigger }: ProjectDialogProps) {
                   maxLength={1000}
                   rows={3}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-glass-900/50 p-3 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-accent-cyan/50 focus:shadow-glow-cyan"
+                />
+              </label>
+
+              <label className="block text-sm text-white/70">
+                GitHub Repository
+                <GlowInput
+                  value={githubRepo}
+                  onChange={(event) => setGithubRepo(event.target.value)}
+                  placeholder="owner/repo or https://github.com/owner/repo"
+                  maxLength={200}
+                  className="mt-2"
                 />
               </label>
 

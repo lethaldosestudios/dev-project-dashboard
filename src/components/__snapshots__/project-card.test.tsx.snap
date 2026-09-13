@@ -7,47 +7,49 @@ exports[`ProjectCard renders and matches snapshot 1`] = `
     href="/projects/sample"
   >
     <div
-      class="rounded-2xl p-6 transition-all duration-300 bg-glass-900/60 backdrop-blur-2xl border shadow-glow-blue/50 hover:bg-glass-700/60 hover:shadow-glass-lg hover:translate-y-[-2px] h-full glass-interactive border-white/5 hover:border-white/10"
+      class="rounded-2xl p-6 transition-all duration-300 bg-glass-900/60 backdrop-blur-2xl border shadow-glow-blue/50 hover:bg-glass-700/60 hover:shadow-glass-lg hover:translate-y-[-2px] h-full glass-interactive border-white/5 hover:border-white/10 flex flex-col justify-between"
     >
-      <div
-        class="flex justify-between items-start mb-3"
-      >
+      <div>
         <div
-          class="flex-1 min-w-0"
+          class="flex justify-between items-start mb-3"
         >
-          <h3
-            class="font-medium text-white truncate group-hover:text-accent-primary transition-colors"
-          >
-            Sample Project
-          </h3>
           <div
-            class="flex items-center gap-2 mt-1"
+            class="flex-1 min-w-0"
           >
-            <span
-              class="text-xs text-accent-emerald"
+            <h3
+              class="font-medium text-white truncate group-hover:text-accent-primary transition-colors"
             >
-              active
-            </span>
-            <span
-              class="text-xs text-accent-cyan"
+              Sample Project
+            </h3>
+            <div
+              class="flex items-center gap-2 mt-1"
             >
-              normal
-            </span>
+              <span
+                class="text-xs text-accent-emerald"
+              >
+                active
+              </span>
+              <span
+                class="text-xs text-accent-cyan"
+              >
+                normal
+              </span>
+            </div>
           </div>
+          <span
+            class="text-xs bg-accent-primary/20 text-accent-primary px-2 py-1 rounded-full"
+          >
+            +3
+          </span>
         </div>
-        <span
-          class="text-xs bg-accent-primary/20 text-accent-primary px-2 py-1 rounded-full"
+        <p
+          class="text-sm text-white/60 line-clamp-2 mb-3"
         >
-          +3
-        </span>
+          A test project
+        </p>
       </div>
-      <p
-        class="text-sm text-white/60 line-clamp-2 mb-3"
-      >
-        A test project
-      </p>
       <div
-        class="flex items-center justify-between text-xs text-white/40"
+        class="flex items-center justify-between text-xs text-white/40 pt-2 border-t border-white/5"
       >
         <span
           class="text-white/50"

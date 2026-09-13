@@ -27,9 +27,6 @@ export function GitHubSyncStatus({ lastSync }: GitHubSyncStatusProps) {
     try {
       const response = await fetch("/api/sync/github", {
         method: "POST",
-        headers: {
-          // Token should be provided via environment or secure input
-        },
       });
 
       const result = await response.json() as SyncResult;
@@ -58,7 +55,7 @@ export function GitHubSyncStatus({ lastSync }: GitHubSyncStatusProps) {
     return date.toLocaleDateString();
   };
 
-  if (!lastSync && !isSyncing) {
+  if (!lastSync && !isSyncing && !syncStatus) {
     return (
       <LiquidButton 
         variant="secondary" 
@@ -84,7 +81,7 @@ export function GitHubSyncStatus({ lastSync }: GitHubSyncStatusProps) {
   if (error) {
     return (
       <LiquidButton variant="secondary" size="sm" onClick={handleSync}>
-        <SyncIcon className="w-4 h-4" />
+        <SyncIcon className="w-4 h-4 text-accent-red" />
         {error}
       </LiquidButton>
     );

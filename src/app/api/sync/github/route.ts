@@ -1,26 +1,30 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb, newId, nowIso } from "@/lib/db";
+import { requireAuth } from "@/lib/auth";
 import {
   fetchUserRepos, fetchRepoEvents, extractActivityFromEvents,
-  getProjectIdForRepo, getRepoLastActivity,
+  getRepoLastActivity,
 } from "@/lib/github";
-import type { SyncResult, SyncRun } from "@/types";
+import type { SyncResult } from "@/types";
 
 const GITHUB_TOKEN_HEADER = "x-github-token";
 
 async function resolveGitHubToken(req: Request): Promise<string | null> {
-const headerToken = req.headers.get(GITHUB_TOKEN_HEADER);
-if (headerToken) return headerToken;
-const ctx = await getCloudflareContext({ async: true });
-const env = ctx.env as { GITHUB_TOKEN?: string };
-return env.GITHUB_TOKEN ?? null;
+  const headerToken = req.headers.get(GITHUB_TOKEN_HEADER);
+  if (headerToken) return headerToken;
+  const ctx = await getCloudflareContext({ async: true });
+  const env = ctx.env as { GITHUB_TOKEN?: string };
+  return env.GITHUB_TOKEN ?? null;
 }
 
 /**
- * Sync GitHub activity for all user repos and update project last_activity_at
+ * Sync GitHub activity for all user repos and update project last_activity_at and repo_metadata
  */
 export async function POST(req: Request) {
+  const auth = await requireAuth(req);
+  if (auth instanceof Response) return auth;
+
   const token = await resolveGitHubToken(req);
   if (!token) {
     return NextResponse.json(
@@ -48,30 +52,31 @@ export async function POST(req: Request) {
     // Step 1: Fetch all user repositories
     const repos = await fetchUserRepos(token);
     
-    // Step 2: For each repo, fetch recent events and update project activity
+    // Step 2: For each repo, match to projects in DB by github_repo and update activity & metadata
     for (const repo of repos) {
       try {
-        // Skip archived repos
         if (repo.archived) continue;
 
-        // Get project_id from repo full_name mapping
-        // In production, this should query projects table for repos with matching github_repo
-        let projectId = getProjectIdForRepo(repo.full_name);
-        
-        // If no project linked, skip but log
-        if (!projectId) {
-          // Try to find project by github_repo field in DB
-          const project = await db
-            .prepare("SELECT id FROM projects WHERE github_repo = ?")
-            .bind(repo.full_name)
-            .first();
-          
-          if (project) {
-            projectId = project.id as string;
-          } else {
-            continue; // No project linked to this repo
-          }
+        // Query projects table for repos with matching github_repo
+        const project = await db
+          .prepare("SELECT id FROM projects WHERE github_repo = ?")
+          .bind(repo.full_name)
+          .first<{ id: string }>();
+
+        if (!project) {
+          continue; // No project linked to this repo
         }
+
+        const projectId = project.id;
+
+        // Build metadata display string (e.g., "⭐ 42 · 🐛 3 · TypeScript")
+        const metadataParts: string[] = [];
+        metadataParts.push(`⭐ ${repo.stargazers_count}`);
+        metadataParts.push(`🐛 ${repo.open_issues_count}`);
+        if (repo.language) {
+          metadataParts.push(repo.language);
+        }
+        const repoMetadataStr = metadataParts.join(" · ");
 
         // Fetch recent events for this repo
         const [owner, repoName] = repo.full_name.split("/");
@@ -111,16 +116,20 @@ export async function POST(req: Request) {
           }
         }
 
-        // Update project last_activity_at based on repo activity
+        // Update project last_activity_at & repo_metadata
         const lastActivity = getRepoLastActivity(repo);
-        if (lastActivity) {
-          await db
-            .prepare(
-              `UPDATE projects SET last_activity_at = ?, updated_at = ? WHERE id = ?`
-            )
-            .bind(lastActivity.toISOString(), nowIso(), projectId)
-            .run();
-        }
+        const lastActivityIso = lastActivity ? lastActivity.toISOString() : null;
+
+        await db
+          .prepare(
+            `UPDATE projects
+             SET repo_metadata = ?,
+                 last_activity_at = COALESCE(?, last_activity_at),
+                 updated_at = ?
+             WHERE id = ?`
+          )
+          .bind(repoMetadataStr, lastActivityIso, nowIso(), projectId)
+          .run();
 
       } catch (repoError) {
         errors.push(`Error syncing ${repo.full_name}: ${repoError instanceof Error ? repoError.message : String(repoError)}`);
@@ -187,7 +196,10 @@ export async function POST(req: Request) {
 /**
  * GET sync status and history
  */
-export async function GET() {
+export async function GET(req: Request) {
+  const auth = await requireAuth(req);
+  if (auth instanceof Response) return auth;
+
   const db = await getDb();
   
   const { results: syncRuns } = await db
@@ -195,4 +207,4 @@ export async function GET() {
     .all();
 
   return NextResponse.json({ syncRuns });
-  }
+}

@@ -37,34 +37,42 @@ export function ProjectCard({ project, activityCount = 0 }: ProjectCardProps) {
       <GlassCard 
         variant="elevated" 
         glow={isStale ? "none" : "subtle"}
-        className="h-full glass-interactive border-white/5 hover:border-white/10"
+        className="h-full glass-interactive border-white/5 hover:border-white/10 flex flex-col justify-between"
       >
-        <div className="flex justify-between items-start mb-3">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-white truncate group-hover:text-accent-primary transition-colors">
-              {project.name}
-            </h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className={`text-xs ${statusColor}`}>
-                {project.status}
-              </span>
-              <span className={`text-xs ${priorityColor}`}>
-                {project.priority}
-              </span>
+        <div>
+          <div className="flex justify-between items-start mb-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-white truncate group-hover:text-accent-primary transition-colors">
+                {project.name}
+              </h3>
+              <div className="flex items-center gap-2 mt-1">
+                <span className={`text-xs ${statusColor}`}>
+                  {project.status}
+                </span>
+                <span className={`text-xs ${priorityColor}`}>
+                  {project.priority}
+                </span>
+              </div>
             </div>
+            {activityCount > 0 && (
+              <span className="text-xs bg-accent-primary/20 text-accent-primary px-2 py-1 rounded-full">
+                +{activityCount}
+              </span>
+            )}
           </div>
-          {activityCount > 0 && (
-            <span className="text-xs bg-accent-primary/20 text-accent-primary px-2 py-1 rounded-full">
-              +{activityCount}
-            </span>
+
+          {project.description && (
+            <p className="text-sm text-white/60 line-clamp-2 mb-3">{project.description}</p>
+          )}
+
+          {project.repo_metadata && (
+            <div className="text-xs text-accent-cyan/80 mb-3 font-mono">
+              {project.repo_metadata}
+            </div>
           )}
         </div>
 
-        {project.description && (
-          <p className="text-sm text-white/60 line-clamp-2 mb-3">{project.description}</p>
-        )}
-
-        <div className="flex items-center justify-between text-xs text-white/40">
+        <div className="flex items-center justify-between text-xs text-white/40 pt-2 border-t border-white/5">
           {daysSinceActivity !== null ? (
             <span className={isStale ? "text-accent-red/70" : "text-white/50"}>
               {daysSinceActivity === 0 

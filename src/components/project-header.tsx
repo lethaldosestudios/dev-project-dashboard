@@ -50,7 +50,7 @@ export function ProjectHeader({ project, links }: ProjectHeaderProps) {
           <p className="text-white/70">{project.description}</p>
         )}
 
-        <div className="flex gap-4 text-sm text-white/50 pt-4 border-t border-white/5">
+        <div className="flex gap-4 text-sm text-white/50 pt-4 border-t border-white/5 flex-wrap items-center">
           {daysSinceActivity !== null && (
             <span className={isStale ? "text-accent-red/70" : "text-white/50"}>
               {daysSinceActivity === 0 
@@ -68,10 +68,15 @@ export function ProjectHeader({ project, links }: ProjectHeaderProps) {
               href={`https://github.com/${project.github_repo}`} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-accent-primary/70 hover:text-accent-primary transition-colors"
+              className="text-accent-primary/70 hover:text-accent-primary transition-colors font-mono text-xs"
             >
               {project.github_repo}
             </Link>
+          )}
+          {project.repo_metadata && (
+            <span className="text-accent-cyan/80 font-mono text-xs">
+              {project.repo_metadata}
+            </span>
           )}
         </div>
 

@@ -24,3 +24,17 @@ export function extractDomain(url: string): string | undefined {
     return undefined;
   }
 }
+
+export function normalizeGithubRepo(input: string | null | undefined): string | null {
+  if (!input) return null;
+  let str = input.trim();
+  if (!str) return null;
+
+  // Strip protocol and domain if full URL is passed
+  str = str.replace(/^https?:\/\//i, "").replace(/^github\.com\//i, "");
+
+  // Remove trailing slashes or .git suffix
+  str = str.replace(/\/$/, "").replace(/\.git$/i, "");
+
+  return str || null;
+}

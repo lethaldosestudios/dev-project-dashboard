@@ -10,9 +10,13 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - Added bookmarklet installation UI under Settings and dashboard navigation links.
 - Hardened `POST /api/capture` with URL, field-length, saved-via, and active-project validation.
 
-### Phase 4 — Polish & Iterate
-- **Status:** Next
-- Visual and functional refinements plus additions surfaced during real use. No committed scope yet — to be planned as concrete items.
+### Phase 4 — GitHub Sync as a Real Feature
+- **Status:** Complete — 2026-09-12
+- Auth-guarded `POST` and `GET` in `/api/sync/github`.
+- Added `github_repo` support and URL normalization in `ProjectDialog` and project API routes.
+- Added `repo_metadata` column to `projects` (`db/migrations/0003_add_repo_metadata.sql`) and populated repo activity and metadata during sync.
+- Retired dead-code `REPO_TO_PROJECT` mapping in `src/lib/github.ts`.
+- Rendered `repo_metadata` on project cards and project detail header.
 
 ### Phase 5 — Optional AI features
 - **Status:** Deferred (possible future direction)
@@ -33,14 +37,11 @@ Running log of issues intentionally deferred during setup, build, and deployment
 - **Fix:** Add `notes/[id]/route.ts` with PATCH/DELETE (auth-protected), plus edit/delete controls in the notes editor.
 
 ### 10. Unresolved findings from `archives/codebase-review.md` (2026-08-31)
-- **Status:** Partially resolved — 2026-09-12 (2 open 🟢 items remain)
-- **Details:** The 2026-08-31 codebase review flagged several items. Most are now resolved. The two remaining suggestions are tracked below.
-  - ✅ Resolved (commits `12f5013` + `d0cae7f`): 🔴 CRITICAL SQL-injection-via-template-literal in `projects/[id]/route.ts` and `resources/[id]/route.ts` — replaced `${updates.join(", ")}` with explicit column-by-column UPDATEs where every value is a bound `?` parameter.
-  - ✅ Resolved (commit `d0cae7f`): 🟡 `as any` body parsing without `try/catch` + unbounded field lengths — the `capture/route.ts` validation pattern (try/catch JSON parse, `typeof`/trim checks, explicit length limits) is now applied across `projects`, `resources`, and `notes` mutation routes.
-  - 🟢 SUGGESTION: hardcoded `REPO_TO_PROJECT` mapping in `src/lib/github.ts` should migrate to DB-backed project settings.
-  - 🟢 SUGGESTION: replace `as any` on D1 results with typed shapes from `src/types/index.ts` (route params already typed; body parsing resolved above).
-- **Why deferred:** The 🟢 items are cosmetic/dead-code cleanup and are not worth acting on until GitHub sync becomes a headline feature (`REPO_TO_PROJECT` is an empty map with an existing `github_repo` DB fallback; the result-cast typing is style-only). The 🔴/🟡 items were resolved in this session.
-- **Remaining fix:** Migrate `REPO_TO_PROJECT` to DB-backed project settings; replace `as any` on D1 result casts with typed shapes from `src/types/index.ts`.
+- **Status:** Resolved — 2026-09-12
+- **Details:**
+  - ✅ Resolved (commits `12f5013` + `d0cae7f`): 🔴 CRITICAL SQL-injection-via-template-literal in `projects/[id]/route.ts` and `resources/[id]/route.ts`.
+  - ✅ Resolved (commit `d0cae7f`): 🟡 `as any` body parsing without `try/catch` + unbounded field lengths across mutation routes.
+  - ✅ Resolved (Phase 4): 🟢 Retired dead-code `REPO_TO_PROJECT` mapping in `src/lib/github.ts` in favor of DB `github_repo` matching.
 
 ## Resolved
 
@@ -71,17 +72,11 @@ Running log of issues intentionally deferred during setup, build, and deployment
 
 ### 7. Unauthenticated mutation API routes
 - **Status:** Complete — 2026-09-11
-- **Details:** Added `src/lib/auth.ts` with `requireAuth(request)` (Cloudflare Access `Cf-Access-User-Email` header, with a local-dev bypass when `NODE_ENV !== 'production'`), and wired it into all existing mutation handlers: `POST /api/projects`, `PATCH`/`DELETE /api/projects/[id]`, `POST /api/resources`, `PATCH`/`DELETE /api/resources/[id]`, and `POST /api/notes`.
-- **Verification:** `pnpm build` passes; `pnpm test` passes (2/2 suites). Note: there is no `notes/[id]` route in this codebase (tracked separately as Issue #9), so the 5 existing mutation routes represent the complete security boundary.
+- **Details:** Added `src/lib/auth.ts` with `requireAuth(request)` (Cloudflare Access `Cf-Access-User-Email` header, with a local-dev bypass when `NODE_ENV !== 'production'`), and wired it into all existing mutation handlers.
 
 ### 8. Jest configuration broken
 - **Status:** Complete — 2026-09-10
-- **Details:** Switched `jest.config.cjs` from `babel-jest` to `ts-jest` with `jsx: 'react-jsx'` (the root `tsconfig.json` uses `jsx: "preserve"`, which left JSX untransformed and caused `SyntaxError`). Also added `modulePathIgnorePatterns` for `.next/` and `.open-next/` to silence haste-map naming collisions.
-- **Verification:** `pnpm test` passes — 2 test suites (`project-card.test.tsx`, `header.test.tsx`) run cleanly with no `SyntaxError`.
-
-## Deferred Work Log
-
-_(Move items here once fixed, with the resolution date and a one-line summary of what changed.)_
+- **Details:** Switched `jest.config.cjs` from `babel-jest` to `ts-jest` with `jsx: 'react-jsx'`.
 
 ---
 

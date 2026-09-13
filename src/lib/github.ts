@@ -3,7 +3,7 @@
 
 const GITHUB_API_BASE = "https://api.github.com";
 
-interface GitHubRepo {
+export interface GitHubRepo {
   id: number;
   name: string;
   full_name: string;
@@ -79,13 +79,6 @@ export interface GitHubActivity {
   url?: string;
   occurred_at: string;
 }
-
-// Map of owner/repo to project slug for auto-linking
-// This should eventually come from project settings in the DB
-const REPO_TO_PROJECT: Record<string, string> = {
-  // Add your repositories here as you create projects
-  // Format: "owner/repo": "project-slug"
-};
 
 function getHeaders(token: string): HeadersInit {
   return {
@@ -206,14 +199,6 @@ export async function fetchRepoPullRequests(
   }
 
   return response.json() as Promise<GitHubPullRequest[]>;
-}
-
-/**
- * Get the project_id for a given repository full name
- * Uses a simple mapping; in production this should query the projects table
- */
-export function getProjectIdForRepo(repoFullName: string): string | null {
-  return REPO_TO_PROJECT[repoFullName] ?? null;
 }
 
 /**

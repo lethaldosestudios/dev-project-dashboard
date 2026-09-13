@@ -1,7 +1,7 @@
 // src/app/api/projects/route.ts
 import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";
-import { slugify } from "@/lib/utils";
+import { slugify, normalizeGithubRepo } from "@/lib/utils";
 import { requireAuth } from "@/lib/auth";
 
 const priorities = new Set(["low", "normal", "high"]);
@@ -29,6 +29,8 @@ export async function POST(req: Request) {
   const description = typeof body.description === "string" ? body.description : null;
   const stack = typeof body.stack === "string" ? body.stack : null;
   const priority = typeof body.priority === "string" ? body.priority : "normal";
+  const rawGithubRepo = typeof body.github_repo === "string" ? body.github_repo : null;
+  const github_repo = normalizeGithubRepo(rawGithubRepo);
 
   if (!name) {
     return NextResponse.json({ error: "name is required" }, { status: 400 });
@@ -45,6 +47,9 @@ export async function POST(req: Request) {
   if (!priorities.has(priority)) {
     return NextResponse.json({ error: "priority must be low, normal, or high" }, { status: 400 });
   }
+  if (github_repo && github_repo.length > 200) {
+    return NextResponse.json({ error: "github_repo must be 200 characters or fewer" }, { status: 400 });
+  }
 
   const db = await getDb();
   const id = newId();
@@ -53,11 +58,11 @@ export async function POST(req: Request) {
 
   await db
     .prepare(
-      `INSERT INTO projects (id, name, slug, description, status, priority, stack, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?)`
+      `INSERT INTO projects (id, name, slug, description, status, priority, stack, github_repo, created_at, updated_at)
+       VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?, ?)`
     )
-    .bind(id, name, slug, description ?? null, priority, stack ?? null, now, now)
+    .bind(id, name, slug, description ?? null, priority, stack ?? null, github_repo, now, now)
     .run();
 
-  return NextResponse.json({ ok: true, project: { id, name, slug, status: "active", priority } }, { status: 201 });
+  return NextResponse.json({ ok: true, project: { id, name, slug, status: "active", priority, github_repo } }, { status: 201 });
 }

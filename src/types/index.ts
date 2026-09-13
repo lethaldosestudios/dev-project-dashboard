@@ -11,6 +11,7 @@ export interface Project {
   updated_at: string;
   last_activity_at?: string;
   github_repo?: string; // owner/repo format
+  repo_metadata?: string; // display-only metadata string or JSON string
 }
 
 export interface Resource {
