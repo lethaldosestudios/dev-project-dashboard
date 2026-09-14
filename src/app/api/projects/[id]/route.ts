@@ -113,6 +113,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: "github_repo must be a string" }, { status: 400 });
     }
     github_repo = normalizeGithubRepo(githubRepoVal as string | null);
+    if (githubRepoVal && typeof githubRepoVal === "string" && githubRepoVal.trim() !== "" && !github_repo) {
+      return NextResponse.json({ error: "github_repo must be a valid GitHub owner/repo (e.g. owner/repo or a github.com URL)" }, { status: 400 });
+    }
     if (github_repo && github_repo.length > 200) {
       return NextResponse.json({ error: "github_repo must be 200 characters or fewer" }, { status: 400 });
     }

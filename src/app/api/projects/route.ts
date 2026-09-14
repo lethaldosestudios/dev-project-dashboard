@@ -32,6 +32,11 @@ export async function POST(req: Request) {
   const rawGithubRepo = typeof body.github_repo === "string" ? body.github_repo : null;
   const github_repo = normalizeGithubRepo(rawGithubRepo);
 
+  // A supplied github_repo must resolve to a valid owner/repo; reject otherwise.
+  if (rawGithubRepo && rawGithubRepo.trim() !== "" && !github_repo) {
+    return NextResponse.json({ error: "github_repo must be a valid GitHub owner/repo (e.g. owner/repo or a github.com URL)" }, { status: 400 });
+  }
+
   if (!name) {
     return NextResponse.json({ error: "name is required" }, { status: 400 });
   }

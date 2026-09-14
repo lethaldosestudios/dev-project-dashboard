@@ -25,16 +25,53 @@ export function extractDomain(url: string): string | undefined {
   }
 }
 
+// GitHub owner/repo names allow alphanumerics, hyphens, underscores, and dots.
+const GITHUB_NAME_RE = /^[a-zA-Z0-9._-]+$/;
+
+/**
+ * Normalize a pasted GitHub repository reference to the canonical `owner/repo`
+ * form expected by the sync lookup and the project-header link.
+ *
+ * Accepts bare `owner/repo`, `https://github.com/owner/repo` (optionally with a
+ * `www` subdomain, query string, fragment, leading `github.com/`, or a `.git`
+ * suffix). Returns the canonical `owner/repo`string, or `null` if the input
+ * cannot be reduced to exactly a GitHub owner and repository.
+ */
 export function normalizeGithubRepo(input: string | null | undefined): string | null {
   if (!input) return null;
-  let str = input.trim();
-  if (!str) return null;
+  const trimmed = input.trim();
+  if (!trimmed) return null;
 
-  // Strip protocol and domain if full URL is passed
-  str = str.replace(/^https?:\/\//i, "").replace(/^github\.com\//i, "");
+  let path = trimmed;
 
-  // Remove trailing slashes or .git suffix
-  str = str.replace(/\/$/, "").replace(/\.git$/i, "");
+  // If a full URL is given, parse it so query/fragment/www/trailing-slash are
+  // handled correctly. Reject any non-github.com host rather than guessing.
+  if (/^https?:\/\//i.test(trimmed) || /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed)) {
+    let url: URL;
+    try {
+      url = new URL(trimmed);
+    } catch {
+      return null;
+    }
+    const host = url.hostname.toLowerCase();
+    if (host !== "github.com" && host !== "www.github.com") return null;
+    path = url.pathname;
+  } else if (/^github\.com\//i.test(trimmed)) {
+    // e.g. "github.com/owner/repo" without a protocol
+    path = trimmed.slice("github.com".length);
+  }
 
-  return str || null;
+  // Strip leading slashes, trailing slashes, and a trailing .git suffix.
+  path = path.replace(/^\/+/, "").replace(/\/+$/, "").replace(/\.git$/i, "");
+
+  if (!path) return null;
+
+  // A valid repo reference is exactly two path segments: owner/repo.
+  const segments = path.split("/");
+  if (segments.length !== 2) return null;
+
+  const [owner, repo] = segments;
+  if (!GITHUB_NAME_RE.test(owner) || !GITHUB_NAME_RE.test(repo)) return null;
+
+  return `${owner}/${repo}`;
 }
