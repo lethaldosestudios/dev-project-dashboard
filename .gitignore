@@ -10,3 +10,6 @@ dist/
 .dev.vars.*
 !.dev.vars.example
 *.tsbuildinfo
+
+# Local agent tooling (skills, taste, settings) — machine-local, not project source.
+.commandcode/
