@@ -112,6 +112,10 @@ not generic best practices for a different kind of app. Apply the 🔴 CRITICAL 
 Check that a PR's scope matches the workstream it claims to belong to (see `README.md` → Status)
 before approving scope expansion into deferred work.
 
+Note: `.github/instructions/code-review-dev-project-dashboard.instructions.md` declares
+`excludeAgent: ["coding-agent"]`, so GitHub Copilot loads it automatically but coding agents do
+not. If you are a coding agent, read it explicitly before reviewing — it is not injected for you.
+
 ---
 
 ## `docs/` directory — owner's private scratch space

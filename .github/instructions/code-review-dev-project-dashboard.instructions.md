@@ -3,6 +3,7 @@ description: 'Code review instructions for lethaldosestudios/dev-project-dashboa
 applyTo: '**'
 excludeAgent: ["coding-agent"]
 ---
+<!-- verified-against: b5396e5bbd2ca0b8b166b122ef9f9af8ad429e38 | verified: 2026-09-16 -->
 
 # Code Review Instructions — Dev Project Dashboard
 
@@ -36,25 +37,28 @@ Respond in **English**.
 - **A minimal Jest suite exists** (ts-jest + @testing-library/react, 2 component
   suites). Don't block merges solely for "missing tests" — see Testing Standards below
   for what to actually flag.
-- **Phased build (see `README.md` and `TODO.md`).** Phases 1–3 (CRUD, search, GitHub
-  sync/stale detection, bookmarklet capture) are complete. Phase 4 is "Polish &
-  Iterate" (next) and Phase 5 is "Optional AI features" (deferred). AI-assisted
-  development (`AI-DEV-WORKFLOW.md`) is a separate, orthogonal dev-time workflow used
-  to build the repo — **not** a roadmap phase and **not** a runtime feature. When
-  reviewing a PR, check that its scope matches the phase it claims to belong to, and
-  flag scope creep into explicitly-deferred features (browser extension, AI chat over
-  projects, drag-to-reorder, Vercel deploy widgets).
+- **Named workstreams (see `README.md` → Status, and `TODO.md`).** Phases 1–3 (CRUD, search,
+  GitHub sync/stale detection, bookmarklet capture) are closed historical eras. Ordinal numbering
+  above 3 was retired — the fourth phase number had come to mean three different things at once —
+  so everything after Phase 3 is identified by name: **GitHub Sync** (delivered), **Hardening**
+  (next), **Polish**, and **AI Features** (deferred, not committed). AI-assisted development
+  (`AI-DEV-WORKFLOW.md`) is a separate, orthogonal dev-time workflow used to build the repo —
+  **not** a workstream and **not** a runtime feature. When reviewing a PR, check that its scope
+  matches the workstream it claims to belong to, and flag scope creep into explicitly-deferred
+  features (browser extension, AI chat over projects, drag-to-reorder, Vercel deploy widgets).
 
 ## Review Priorities
 
 ### 🔴 CRITICAL (Block merge)
-- **Secrets in code or bundle**: `GITHUB_PAT`, `DASHBOARD_PASSWORD`, or the dev-time
-  NVIDIA model API keys (DeepSeek/Kimi/Nemotron) hardcoded, committed, logged, added to
-  `.env.example` with a real value, or reachable from client-side/browser bundle code.
-  Per `AI-DEV-WORKFLOW.md`, the dev-time model keys must **never** appear in
-  `.env.example`, the browser bundle, the deployed runtime, or source control — treat
-  any PR that wires those keys into `src/app/**` or `src/lib/**` (i.e., into the shipped
-  app rather than a dev-only script/tool) as critical.
+- **Secrets in code or bundle**: `GITHUB_TOKEN` — the only environment variable the app
+  reads, and therefore the only one that belongs in `.env.example` (see `AGENTS.md` →
+  Code Style & Anti-Patterns) — or the dev-time NVIDIA model API keys
+  (DeepSeek/Kimi/Nemotron) hardcoded, committed, logged, added to `.env.example` with a
+  real value, or reachable from client-side/browser bundle code. Per
+  `AI-DEV-WORKFLOW.md`, the dev-time model keys must **never** appear in `.env.example`,
+  the browser bundle, the deployed runtime, or source control — treat any PR that wires
+  those keys into `src/app/**` or `src/lib/**` (i.e., into the shipped app rather than a
+  dev-only script/tool) as critical.
 - **SQL injection / raw string interpolation into D1 queries**: any `db.prepare(...)`
   call built with template-literal interpolation of request input instead of `?`
   placeholders + `.bind(...)`. The existing codebase is consistently parameterized
@@ -62,16 +66,19 @@ Respond in **English**.
   to the same standard.
 - **Unauthenticated write/mutation routes with real-world consequence**: this is
   single-user, so the concern isn't cross-tenant access — it's that any exposed
-  `POST`/`PATCH` route is a public, unauthenticated write endpoint by default (per
-  README §2, auth is Cloudflare Access or a fallback password/session cookie, not yet
-  fully wired everywhere). Flag any new mutation route that doesn't respect whatever
-  auth mechanism is in place for it, and flag any route that trusts a client-supplied
-  identity/token without validating it server-side.
+  `POST`/`PATCH`/`DELETE` route is a public, unauthenticated write endpoint unless it
+  calls `requireAuth()`. Auth is Cloudflare Access only, validated against the
+  `Cf-Access-User-Email` header in `src/lib/auth.ts` — there is **no** password or
+  session cookie. Every mutation handler must call `requireAuth()`; the only two declared
+  exceptions are `POST /api/capture` and `POST /api/sync/deploys`, both tracked in
+  `TODO.md`, and `pnpm docs:check` fails if a third appears undeclared. Flag any route
+  that trusts a client-supplied identity/token without validating it server-side.
 - **Data loss risk**: destructive operations (deletes, bulk updates) on `projects`,
-  `resources`, `notes`, `github_activity` without a guard (e.g., soft-delete via
-  `archived_at`, confirmation, or scoping by id) — the schema already favors soft
-  deletion (`archived_at` on `projects`) where it exists; don't bypass it with a hard
-  `DELETE`.
+  `resources`, `notes`, `github_activity` without a guard. The existing guards are
+  soft-delete via `archived_at`, an explicit UI confirmation, and scoping by id. Note
+  that the app does hard-delete deliberately: `DELETE /api/projects/[id]` cascades across
+  notes, resources, links, activity, and resource tags, guarded by a confirmation and
+  `requireAuth()`. Don't add a new destructive path that skips those guards.
 - **Breaking a Worker deploy**: changes that would fail under the Workers runtime
   (Node-only APIs without `nodejs_compat` coverage, filesystem access, missing
   `async: true` on `getCloudflareContext`, etc.) or that skip updating `wrangler.jsonc`
@@ -128,33 +135,32 @@ Respond in **English**.
    these aren't generic best practices, they're constraints of this runtime.
 3. **Suggest concrete fixes**, ideally matching the existing code's own idioms rather
    than introducing a new pattern or dependency.
-4. **Be pragmatic about scale**: this is a $0–1/month solo project (README §1 success
-   criteria). Don't push enterprise-grade abstraction, config layers, or process for
-   their own sake.
+4. **Be pragmatic about scale**: this is a $0–1/month solo project. Don't push
+   enterprise-grade abstraction, config layers, or process for their own sake.
 5. **Recognize good practices** — call out when a PR correctly follows the
    parameterized-query / manual-validation / soft-delete conventions already in place.
 6. **Group related comments** rather than repeating the same note per occurrence.
 
 ## Security Review
 
-- **Sensitive data**: no `GITHUB_PAT`, `DASHBOARD_PASSWORD`, session secrets, or
-  dev-time NVIDIA model API keys in code, logs, error messages, or client-visible
-  responses.
+- **Sensitive data**: no `GITHUB_TOKEN` value, session secrets, or dev-time NVIDIA model
+  API keys in code, logs, error messages, or client-visible responses.
 - **Input validation**: all request bodies parsed defensively (wrap `req.json()` in
-  try/catch per the `capture/route.ts` pattern), all string inputs trimmed and
+  try/catch per the `src/app/api/capture/route.ts` pattern), all string inputs trimmed and
   length-checked, all enum-like fields checked against an explicit allowlist.
 - **SQL injection**: every D1 query uses `?` placeholders with `.bind()` — never
   string-concatenate user input into a query.
 - **URL handling**: user-supplied URLs (resource capture, project links) should be
   validated with `new URL(...)` and restricted to `http:`/`https:` protocols, per the
-  existing pattern in `capture/route.ts` — flag anything that accepts arbitrary
-  schemes (`javascript:`, `file:`, etc.) unfiltered.
-- **Auth/session**: verify any new protected route actually checks whatever auth
-  mechanism applies (Cloudflare Access header/claim, or the password/session cookie
-  fallback) rather than relying on obscurity of the URL.
-- **Third-party tokens**: the GitHub sync flow currently reads a PAT from an
-  `x-github-token` request header per-call (README §7) rather than a stored secret —
-  flag if a PR logs this header, forwards it somewhere unexpected, or persists it to D1
+  existing pattern in `src/app/api/capture/route.ts` — flag anything that accepts
+  arbitrary schemes (`javascript:`, `file:`, etc.) unfiltered.
+- **Auth/session**: verify any new protected route calls `requireAuth()` from
+  `src/lib/auth.ts`, rather than relying on obscurity of the URL. There is no session
+  cookie or password fallback — if you see documentation claiming one exists, that
+  documentation is stale.
+- **Third-party tokens**: `POST /api/sync/github` resolves a token from the
+  `x-github-token` request header first, then falls back to the `GITHUB_TOKEN` Worker
+  secret. Flag if a PR logs either, forwards it somewhere unexpected, or persists it to D1
   in plaintext.
 
 ## Testing Standards
@@ -172,11 +178,11 @@ suites) — treat it as a light safety net, not full coverage. So:
 - **If a PR does add tests**, apply the general standards: descriptive names, specific
   assertions, edge cases (empty collections, null timestamps, malformed URLs),
   independence from external state.
-- **Verification in lieu of tests**: this repo documents manual verification steps in
-  `TODO.md` (e.g., "TypeScript, `next build`, OpenNext build, and local Cloudflare
-  preview all pass... returned HTTP 200"). A PR description following that pattern is
-  an acceptable substitute for automated tests at this project's current stage —
-  reviewers should expect it and can ask for it if missing on a nontrivial change.
+- **Verification in lieu of tests**: describe manual verification steps in the PR
+  description — build passes, routes return the expected status codes, `pnpm docs:check`
+  passes. A PR description following that pattern is an acceptable substitute for
+  automated tests at this project's current stage — reviewers should expect it and can ask
+  for it if missing on a nontrivial change.
 
 ## Performance Considerations
 
@@ -192,29 +198,33 @@ suites) — treat it as a light safety net, not full coverage. So:
 
 ## Architecture and Design
 
-- **Follow the existing structure** documented in `README.md` §3: route handlers in
-  `src/app/api/**/route.ts`, shared DB helpers in `src/lib/db.ts`, GitHub client logic
-  in `src/lib/github.ts`, shared types in `src/types/index.ts`. New cross-cutting logic
-  belongs in `src/lib/`, not duplicated inline in route handlers.
-- **Keep `REPO_TO_PROJECT`-style hardcoded mappings on the radar**: `src/lib/github.ts`
-  notes the repo→project mapping "should eventually come from project settings in the
-  DB" — the route already has a DB-lookup fallback. Don't add new features that
-  deepen the hardcoded-mapping approach instead of migrating toward the DB-backed one.
-- **Respect the phase boundary**: the AI development tooling (see `AI-DEV-WORKFLOW.md`)
-  is explicitly a dev-time aid, not a dashboard feature — code introducing runtime
-  routes, UI, or dependencies on the NVIDIA models inside `src/app/**` should be
-  questioned unless the PR is deliberately implementing Phase 5 "Optional AI features"
-  as an in-app product direction.
+- **Follow the existing structure** documented in `README.md` → Project structure: route
+  handlers in `src/app/api/**/route.ts`, shared DB helpers in `src/lib/db.ts`, GitHub
+  client logic in `src/lib/github.ts`, shared types in `src/types/index.ts`. New
+  cross-cutting logic belongs in `src/lib/`, not duplicated inline in route handlers.
+- **There is no service layer.** Pages and route handlers both issue SQL directly against
+  the helper in `src/lib/db.ts`, so the same query often exists in two places. That is a
+  deliberate trade-off at this scale — don't introduce an abstraction layer just to
+  deduplicate it, but do keep the two copies in sync when changing a query.
+- **Respect the workstream boundary**: the AI development tooling (see
+  `AI-DEV-WORKFLOW.md`) is explicitly a dev-time aid, not a dashboard feature — code
+  introducing runtime routes, UI, or dependencies on the NVIDIA models inside
+  `src/app/**` should be questioned unless the PR is deliberately implementing the
+  deferred **AI Features** workstream as an in-app product direction.
 
 ## Documentation Standards
 
-- **README.md** roadmap checklist and phase-status sections (§6–§9) should be updated
-  when a PR completes, changes, or defers tracked work.
-- **TODO.md** is the running log for known issues and deferred work — new deferred
-  work discovered during a PR should be recorded there, not left implicit.
+- **The Documentation Contract in `AGENTS.md` applies to every PR.** In short: the code is
+  the source of truth; every claim must name a checkable file or symbol; cite `file:line`
+  and never a README section number; ordinal phase numbers above 3 are retired; and
+  `pnpm docs:check` must pass.
+- **README.md** → Status and its feature/limitations lists should be updated in the same
+  commit when a PR completes, changes, or defers tracked work.
+- **TODO.md** is the running log for open and deferred work — new deferred work discovered
+  during a PR should be recorded there, not left implicit. Resolving an item means deleting
+  it and recording the resolution in `CHANGELOG.md`.
 - **Public API routes**: new routes under `src/app/api/` should get a one-line comment
-  header (matching the `// src/app/api/projects/route.ts` convention already used) and
-  a corresponding line added to the relevant README status section.
+  header, matching the `// src/app/api/projects/route.ts` convention already used.
 
 ## Comment Format Template
 
@@ -238,18 +248,17 @@ Workers/D1) or its single-user trust model — not generic enterprise reasoning.
 **🔴 CRITICAL - Security: Unauthenticated mutation route**
 
 `POST /api/projects/[id]/archive` (new in this PR) performs a destructive update with
-no auth check. Every other mutation route in this repo either checks the session or is
-explicitly documented as dev-only (like the `x-github-token` header on sync). This
-route has neither.
+no auth check. Every other mutation route in this repo calls `requireAuth()`; the only
+exceptions are the two declared in `AGENTS.md` and tracked in `TODO.md`. This route has
+neither a check nor a declaration.
 
 **Why this matters:**
 This app is deployed to a public Cloudflare Workers URL. Without an auth check, anyone
 who finds the URL can archive projects.
 
 **Suggested fix:**
-Add the same auth check used elsewhere (Cloudflare Access header / session cookie)
-before performing the update, and return 401 if it's missing — matching the pattern in
-`sync/github/route.ts`.
+Add `requireAuth()` at the top of the handler and return its 401 response early,
+matching the pattern in `src/app/api/sync/github/route.ts`.
 ````
 
 #### Important Issue
@@ -262,7 +271,7 @@ file in `db/migrations/`.
 **Why this matters:**
 `schema.sql` and `db/migrations/*.sql` need to stay in sync — anyone running the
 migration files against an existing D1 database won't get this column, and the two
-setup paths documented in `README.md` §4 will diverge.
+setup paths documented in `README.md` → Getting started will diverge.
 
 **Suggested fix:**
 Add `db/migrations/0002_add_github_repo.sql` with the `ALTER TABLE` statement.
@@ -294,7 +303,7 @@ const body = (await req.json()) as { name?: string; priority?: string };
 - [ ] No dead code, commented-out code, or untracked TODOs (untracked = not in `TODO.md`)
 
 ### Security
-- [ ] No secrets (GitHub PAT, dashboard password, dev-time NVIDIA model keys) in code, logs, or `.env.example`
+- [ ] No secrets (the `GITHUB_TOKEN` value, dev-time NVIDIA model keys) in code, logs, or `.env.example`; `.env.example` lists only variables the code reads
 - [ ] All D1 queries use `?` + `.bind()`, never string interpolation
 - [ ] All request bodies validated (type-checked, trimmed, length-limited, enum-checked)
 - [ ] URLs validated for scheme (`http`/`https` only) before storage or use
@@ -302,7 +311,7 @@ const body = (await req.json()) as { name?: string; priority?: string };
 
 ### Testing / Verification
 - [ ] Edge cases mentally traced for sync, capture, and validation logic even without automated tests
-- [ ] PR description includes manual verification steps for nontrivial changes (build passes, routes return expected status codes), per the `TODO.md` pattern
+- [ ] PR description includes manual verification steps for nontrivial changes (build passes, routes return expected status codes, `pnpm docs:check` passes)
 - [ ] If tests are added, they're independent, specific, and cover edge cases
 
 ### Performance
@@ -311,25 +320,33 @@ const body = (await req.json()) as { name?: string; priority?: string };
 - [ ] No obviously CPU-heavy synchronous work in a request handler
 
 ### Architecture
-- [ ] Change matches its claimed roadmap phase; no unflagged scope creep into deferred features
+- [ ] Change matches its claimed workstream; no unflagged scope creep into deferred features
 - [ ] `db/schema.sql` and `db/migrations/` stay in sync
 - [ ] New cross-cutting logic lives in `src/lib/`, not duplicated in route handlers
 - [ ] Wrangler bindings (`wrangler.jsonc`) updated if a new D1 table/binding is introduced
 
 ### Documentation
-- [ ] `README.md` roadmap/status sections updated if this PR completes or changes tracked work
+- [ ] `README.md` Status and feature/limitations lists updated if this PR completes or changes tracked work
 - [ ] `TODO.md` updated with any newly deferred work
-- [ ] New API routes have a file-header comment and a corresponding README status line
+- [ ] New API routes have a file-header comment
+- [ ] `pnpm docs:check` passes
 
 ## Project Reference
 
-- **Tech Stack**: Next.js 15 (App Router) + TypeScript + Tailwind + shadcn/ui-style components
+- **Tech Stack**: Next.js 15 (App Router) + TypeScript + Tailwind + bespoke glass
+  components in `src/components/ui/` (not shadcn/ui — there is no shadcn or radix
+  dependency)
 - **Runtime**: Cloudflare Workers via `@opennextjs/cloudflare`
-- **Database**: Cloudflare D1 (SQLite), raw `prepare()`/`bind()` — no ORM
-- **Auth**: Cloudflare Access, or fallback single-user password + session cookie (partial coverage — verify per-route)
-- **GitHub Integration**: GitHub REST API, PAT via `x-github-token` header (dev/testing pattern per README §7)
+- **Database**: Cloudflare D1 (SQLite), raw `prepare()`/`bind()` — no ORM, no service layer
+- **Auth**: Cloudflare Access only, via `requireAuth()` in `src/lib/auth.ts` — there is no
+  password or session cookie
+- **GitHub Integration**: GitHub REST API; token from the `x-github-token` header, falling
+  back to the `GITHUB_TOKEN` Worker secret
 - **Package manager**: pnpm
 - **Deploy**: `pnpm deploy` (OpenNext build → Cloudflare Workers)
-- **Local dev**: `pnpm dev` (Next dev server) or `pnpm preview` (full Cloudflare Workers runtime via Wrangler, `localhost:8787`)
-- **Testing**: minimal Jest suite (ts-jest + @testing-library/react) — see Testing Standards above
-- **Scale/cost target**: $0–1/month infra, single user (per `README.md` §1)
+- **Local dev**: `pnpm dev` (Next dev server) or `pnpm preview` (full Cloudflare Workers
+  runtime via Wrangler, `localhost:8787`)
+- **Testing**: minimal Jest suite (ts-jest + @testing-library/react) — see Testing
+  Standards above
+- **Docs**: `pnpm docs:check` — see the Documentation Contract in `AGENTS.md`
+- **Scale/cost target**: $0–1/month infra, single user
