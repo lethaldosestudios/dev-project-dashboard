@@ -1,4 +1,4 @@
-<!-- verified-against: b5396e5bbd2ca0b8b166b122ef9f9af8ad429e38 | verified: 2026-09-16 -->
+<!-- verified-against: 6ad0de10231f3a26e2dc0eeb10525cb527bd9b95 | verified: 2026-09-16 -->
 # Changelog
 
 **This file is a historical record only.** It describes what changed and when. It is
@@ -14,6 +14,11 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- `docs:check` gained an eighth check: a state doc fails if it is older than the newest commit
+  touching `src/` or `db/`, so a behaviour change can no longer ship with stale docs and a green
+  build. Commit timestamps are compared rather than demanding the stamp equal `HEAD`, because a
+  commit's SHA is unknowable before it exists; the remedy is a one-line stamp bump that forces a
+  re-read. All five state docs were re-read and re-stamped.
 - Added a **Feature parity** workstream to the roadmap, ordered between Hardening and Polish. Notes
   edit/delete, tags, and project links are features rather than defects, and the owner's decision is
   that they complete before refinement work begins. Hardening is complete.

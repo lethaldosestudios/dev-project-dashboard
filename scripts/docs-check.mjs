@@ -299,6 +299,64 @@ function checkSchemaSync() {
 }
 
 // ---------------------------------------------------------------------------
+// 8. Docs are current, not merely correct
+//
+// Every check above can pass while a doc still describes an older codebase. If the
+// newest commit touching src/ or db/ is newer than a state doc, that doc has not been
+// re-read since the code changed.
+//
+// Comparing commit timestamps (rather than demanding the stamp equal HEAD) avoids the
+// chicken-and-egg of not knowing a commit's SHA before creating it. The remedy is
+// always one line — bump the stamp — and that forces the re-read.
+// ---------------------------------------------------------------------------
+function lastCommitTime(pathspec) {
+  try {
+    const out = execFileSync("git", ["log", "-1", "--format=%ct", "--", ...pathspec], {
+      cwd: ROOT,
+      encoding: "utf8",
+    }).trim();
+    return out ? Number(out) : null;
+  } catch {
+    return null;
+  }
+}
+
+function hasUncommittedChanges(path) {
+  try {
+    const out = execFileSync("git", ["status", "--porcelain", "--", path], {
+      cwd: ROOT,
+      encoding: "utf8",
+    });
+    return out.trim().length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function checkDocsAreCurrent() {
+  const codeTime = lastCommitTime(["src", "db"]);
+  if (codeTime === null) return; // no code history to compare against
+
+  for (const doc of STATE_DOCS) {
+    if (!existsSync(join(ROOT, doc))) continue;
+    // A doc being edited right now counts as current: its new content is not committed yet, so
+    // history alone would always look stale mid-change. CI runs on a clean tree, so this only
+    // relaxes the local pre-commit run.
+    if (hasUncommittedChanges(doc)) continue;
+
+    const docTime = lastCommitTime([doc]);
+    if (docTime === null) continue;
+    if (docTime < codeTime) {
+      fail(
+        "docs-current",
+        doc,
+        "is older than the newest change to src/ or db/ — re-read it and refresh the verified-against stamp",
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 
 const CHECKS = [
   ["auth-coverage", checkAuthCoverage],
@@ -308,6 +366,7 @@ const CHECKS = [
   ["section-citation", checkSectionCitations],
   ["verified-against", checkVerifiedAgainst],
   ["schema-sync", checkSchemaSync],
+  ["docs-current", checkDocsAreCurrent],
 ];
 
 for (const [, run] of CHECKS) run();

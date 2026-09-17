@@ -1,4 +1,4 @@
-<!-- verified-against: b5396e5bbd2ca0b8b166b122ef9f9af8ad429e38 | verified: 2026-09-16 -->
+<!-- verified-against: 6ad0de10231f3a26e2dc0eeb10525cb527bd9b95 | verified: 2026-09-16 -->
 # AGENTS.md
 
 How AI agents should work in this repository. Read this before reviewing a PR or writing code.
@@ -54,6 +54,10 @@ These make claims about the **current** state and must stay true:
    resolves to a real commit.
 7. **`pnpm docs:check` must pass.** It runs in CI. If a check blocks you, fix the drift or add an
    explicit, reasoned entry to the script's allowlist — never weaken the check.
+8. **Touching `src/` or `db/` makes every state doc stale.** `docs:check` fails when a state doc is
+   older than the newest commit to those trees. Re-read this list and refresh the `verified-against`
+   stamp even if no prose needed to change — that acknowledgement is the point, because it forces
+   the claims to be re-checked on every behaviour change.
 
 ---
 
