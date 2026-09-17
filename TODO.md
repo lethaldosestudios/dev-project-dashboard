@@ -31,16 +31,6 @@ confirmed against the code on the date this file was last verified (see the stam
   there is no route or UI to create a link. The "Links" section can never populate through the app.
 - **Fix:** Add `POST`/`PATCH`/`DELETE` for project links plus UI in the project dialog.
 
-### 11. GitHub sync is unpaginated, N+1, and misreports `skipped`
-- **Logged:** 2026-09-16
-- **Details:** `POST /api/sync/github` calls `fetchUserRepos` with `per_page=100` and no pagination,
-  silently ignoring repos beyond the first 100. For each linked repo it issues one events request,
-  then one `SELECT` plus one `INSERT` per event. The response's `skipped` count is hardcoded to `0`
-  even when duplicate events are skipped. There is no rate-limit or backoff handling.
-- **Why it matters:** this runs on Cloudflare Workers, which cap subrequests per request.
-- **Fix:** Paginate repo discovery, batch the existence checks into a single `IN (...)` query, and
-  report the real skipped count.
-
 ### 13. Six components are exported but never imported
 - **Logged:** 2026-09-16
 - **Details:** `src/components/project-header.tsx`, `src/components/ui/sidebar.tsx`,

@@ -84,22 +84,37 @@ function getHeaders(token: string): HeadersInit {
   };
 }
 
-/**
- * Fetch all repositories for the authenticated user
- */
-export async function fetchUserRepos(token: string, perPage: number = 100): Promise<GitHubRepo[]> {
-  const headers = getHeaders(token);
-  const response = await fetch(
-    `${GITHUB_API_BASE}/user/repos?type=owner&sort=updated&per_page=${perPage}`,
-    { headers }
-  );
+const REPO_PAGE_SIZE = 100;
+const MAX_REPO_PAGES = 10;
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`GitHub API error: ${response.status} ${error}`);
+/**
+ * Fetch every repository owned by the authenticated user, following pagination.
+ *
+ * Capped at MAX_REPO_PAGES pages: this runs inside a Cloudflare Worker with a subrequest budget, so
+ * a very large account must not be able to consume the whole request.
+ */
+export async function listAllUserRepos(token: string): Promise<GitHubRepo[]> {
+  const headers = getHeaders(token);
+  const repos: GitHubRepo[] = [];
+
+  for (let page = 1; page <= MAX_REPO_PAGES; page += 1) {
+    const response = await fetch(
+      `${GITHUB_API_BASE}/user/repos?type=owner&sort=updated&per_page=${REPO_PAGE_SIZE}&page=${page}`,
+      { headers }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`GitHub API error: ${response.status} ${error}`);
+    }
+
+    const batch = (await response.json()) as GitHubRepo[];
+    repos.push(...batch);
+
+    if (batch.length < REPO_PAGE_SIZE) break;
   }
 
-  return response.json() as Promise<GitHubRepo[]>;
+  return repos;
 }
 
 /**

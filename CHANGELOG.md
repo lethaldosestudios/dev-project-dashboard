@@ -14,6 +14,11 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- Hardened GitHub sync. It stopped at the first 100 repos with no pagination, ran a `SELECT` and an
+  `INSERT` per event, and reported `skipped: 0` regardless. `listAllUserRepos()`
+  (`src/lib/github.ts`) now pages (capped at 10 pages), the existence check is one `IN (...)`
+  query per 50 events, inserts go through `db.batch()`, and the response reports real
+  `synced`/`skipped` counts.
 - Collapsed the duplicate `GitHubActivity` type. `src/types/index.ts` and `src/lib/github.ts` both
   exported one, with different shapes. `src/lib/github.ts` now imports the canonical type and
   exports `GitHubActivityDraft = Omit<GitHubActivity, "created_at">` for pre-insert activity.

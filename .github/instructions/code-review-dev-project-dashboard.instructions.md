@@ -31,9 +31,9 @@ Respond in **English**.
   in `src/lib/db.ts` and the API routes — there is no ORM. This raises the bar on manual
   query review (see Security below) but also means "N+1 query" concerns are about D1
   round-trips specifically, and D1 has its own row/query-count limits worth keeping in mind
-  for anything that loops and queries per-iteration (see `sync/github/route.ts`'s
-  per-repo, per-event query pattern as the existing baseline — new code should not make
-  this pattern worse without reason).
+  for anything that loops and queries per-iteration. `src/app/api/sync/github/route.ts` is
+  the baseline to copy: it batches its existence check into one `IN (...)` query and inserts
+  with `db.batch()` rather than querying per event.
 - **A minimal Jest suite exists** (ts-jest + @testing-library/react). Don't block merges solely for
   "missing tests" — see Testing Standards below for what to actually flag.
 - **Named workstreams (see `README.md` → Status, and `TODO.md`).** Phases 1–3 (CRUD, search,
@@ -99,11 +99,11 @@ Respond in **English**.
   status codes (400 for validation, 401 for missing auth token, 500 for unexpected
   failure — see `sync/github/route.ts`). New routes drifting from this shape make the
   frontend harder to reason about.
-- **GitHub sync robustness**: `src/lib/github.ts` / `sync/github/route.ts` do
-  per-repo, per-event work inside a loop with try/catch per repo so one bad repo
-  doesn't kill the whole sync. Preserve that isolation in any changes — don't let a
-  single failure abort the whole `POST /api/sync/github` run silently, and don't
-  regress the "skip archived repos" / dedupe-by-`external_id` behavior.
+- **GitHub sync robustness**: `src/lib/github.ts` / `src/app/api/sync/github/route.ts` work
+  repo-by-repo inside a loop, with try/catch per repo so one bad repo doesn't kill the whole
+  sync. Preserve that isolation in any changes — don't let a single failure abort the whole
+  `POST /api/sync/github` run silently, and don't regress the "skip archived repos" /
+  dedupe-by-`external_id` behaviour or the `synced` / `skipped` counts.
 - **Client/server boundary correctness**: App Router components should only use
   `"use client"` where actually needed (state, effects, event handlers). Flag
   unnecessary client components, and flag server-only logic (DB access, secrets)
@@ -185,14 +185,13 @@ net, not full coverage. So:
 
 ## Performance Considerations
 
-- **D1 query count**: loops that issue a query per iteration (the GitHub sync route
-  already does this deliberately, with per-repo error isolation) should be reviewed for
-  whether they'll blow up on a larger repo/event count. Prefer batching or a single
-  query with `IN (...)` where D1 supports it and the change is low-risk.
+- **D1 query count**: loops that issue a query per iteration should be reviewed for whether they
+  will blow up on a larger row count. Prefer batching or a single query with `IN (...)`, as
+  `src/app/api/sync/github/route.ts` does for both its existence check and its inserts.
 - **Workers CPU time**: avoid heavy synchronous computation or unbounded loops in
   request handlers — there's a per-request CPU limit on Workers.
-- **Pagination**: GitHub API calls already use `perPage` params — new calls to
-  `fetchUserRepos`/`fetchRepoEvents`/etc. should set sane limits rather than fetching
+- **Pagination**: GitHub API calls use `perPage`/`page` params — new calls to
+  `listAllUserRepos`/`fetchRepoEvents`/etc. should set sane limits and caps rather than fetching
   unbounded result sets.
 
 ## Architecture and Design

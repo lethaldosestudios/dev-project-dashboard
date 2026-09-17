@@ -3,12 +3,15 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb, newId, nowIso } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 import {
-  fetchUserRepos, fetchRepoEvents, extractActivityFromEvents,
+  listAllUserRepos, fetchRepoEvents, extractActivityFromEvents,
   getRepoLastActivity,
 } from "@/lib/github";
 import type { SyncResult } from "@/types";
 
 const GITHUB_TOKEN_HEADER = "x-github-token";
+
+// D1 caps how many parameters a single statement may bind, so existence checks are chunked.
+const EXISTENCE_CHUNK_SIZE = 50;
 
 async function resolveGitHubToken(req: Request): Promise<string | null> {
   const headerToken = req.headers.get(GITHUB_TOKEN_HEADER);
@@ -16,6 +19,36 @@ async function resolveGitHubToken(req: Request): Promise<string | null> {
   const ctx = await getCloudflareContext({ async: true });
   const env = ctx.env as { GITHUB_TOKEN?: string };
   return env.GITHUB_TOKEN ?? null;
+}
+
+/**
+ * Which of these external ids are already stored?
+ *
+ * One query per chunk instead of one per event: the previous per-event SELECT meant two D1 round
+ * trips for every event on every linked repo. The placeholder list is built from the chunk length,
+ * not from any request input, so no part of the SQL comes from user data.
+ */
+async function findExistingExternalIds(
+  db: D1Database,
+  externalIds: string[]
+): Promise<Set<string>> {
+  const found = new Set<string>();
+
+  for (let start = 0; start < externalIds.length; start += EXISTENCE_CHUNK_SIZE) {
+    const chunk = externalIds.slice(start, start + EXISTENCE_CHUNK_SIZE);
+    const placeholders = chunk.map(() => "?").join(", ");
+
+    const { results } = await db
+      .prepare(`SELECT external_id FROM github_activity WHERE external_id IN (${placeholders})`)
+      .bind(...chunk)
+      .all<{ external_id: string }>();
+
+    for (const row of results) {
+      found.add(row.external_id);
+    }
+  }
+
+  return found;
 }
 
 /**
@@ -32,11 +65,12 @@ export async function POST(req: Request) {
       { status: 401 }
     );
   }
-  
+
   const db = await getDb();
   const syncRunId = newId();
   const startedAt = nowIso();
   let recordsProcessed = 0;
+  let recordsSkipped = 0;
   const errors: string[] = [];
 
   // Record sync start
@@ -50,8 +84,8 @@ export async function POST(req: Request) {
 
   try {
     // Step 1: Fetch all user repositories
-    const repos = await fetchUserRepos(token);
-    
+    const repos = await listAllUserRepos(token);
+
     // Step 2: For each repo, match to projects in DB by github_repo and update activity & metadata
     for (const repo of repos) {
       try {
@@ -81,39 +115,45 @@ export async function POST(req: Request) {
         // Fetch recent events for this repo
         const [owner, repoName] = repo.full_name.split("/");
         const events = await fetchRepoEvents(token, owner, repoName, 30);
-        
+
         // Extract activity from events
         const activities = extractActivityFromEvents(events);
-        
-        // Save each activity to the database
-        for (const activity of activities) {
-          const existing = await db
-            .prepare("SELECT id FROM github_activity WHERE external_id = ?")
-            .bind(activity.external_id)
-            .first();
 
-          if (!existing) {
-            await db
-              .prepare(
-                `INSERT INTO github_activity 
-                 (id, project_id, event_type, external_id, commit_sha, title, author, url, occurred_at, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-              )
-              .bind(
-                newId(),
-                projectId,
-                activity.event_type,
-                activity.external_id,
-                activity.commit_sha ?? null,
-                activity.title ?? null,
-                activity.author ?? null,
-                activity.url ?? null,
-                activity.occurred_at,
-                nowIso()
-              )
-              .run();
-            recordsProcessed++;
-          }
+        // One existence check for the whole repo, then only insert what is genuinely new
+        const alreadyStored = await findExistingExternalIds(
+          db,
+          activities.map((activity) => activity.external_id)
+        );
+        const newActivities = activities.filter(
+          (activity) => !alreadyStored.has(activity.external_id)
+        );
+        recordsSkipped += activities.length - newActivities.length;
+
+        if (newActivities.length > 0) {
+          // One batch per repo — a single transaction instead of an INSERT round trip per event.
+          await db.batch(
+            newActivities.map((activity) =>
+              db
+                .prepare(
+                  `INSERT INTO github_activity
+                   (id, project_id, event_type, external_id, commit_sha, title, author, url, occurred_at, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                )
+                .bind(
+                  newId(),
+                  projectId,
+                  activity.event_type,
+                  activity.external_id,
+                  activity.commit_sha ?? null,
+                  activity.title ?? null,
+                  activity.author ?? null,
+                  activity.url ?? null,
+                  activity.occurred_at,
+                  nowIso()
+                )
+            )
+          );
+          recordsProcessed += newActivities.length;
         }
 
         // Update project last_activity_at & repo_metadata
@@ -148,7 +188,7 @@ export async function POST(req: Request) {
     const result: SyncResult = {
       ok: true,
       synced: recordsProcessed,
-      skipped: 0,
+      skipped: recordsSkipped,
       errors: errors.length > 0 ? errors : undefined,
       syncRun: {
         id: syncRunId,
@@ -164,7 +204,7 @@ export async function POST(req: Request) {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    
+
     // Update sync run with failure
     await db
       .prepare(
@@ -176,7 +216,7 @@ export async function POST(req: Request) {
     const result: SyncResult = {
       ok: false,
       synced: recordsProcessed,
-      skipped: 0,
+      skipped: recordsSkipped,
       errors: [errorMessage, ...errors],
       syncRun: {
         id: syncRunId,
@@ -201,7 +241,7 @@ export async function GET(req: Request) {
   if (auth instanceof Response) return auth;
 
   const db = await getDb();
-  
+
   const { results: syncRuns } = await db
     .prepare("SELECT * FROM sync_runs WHERE sync_type = 'github' ORDER BY started_at DESC LIMIT 20")
     .all();

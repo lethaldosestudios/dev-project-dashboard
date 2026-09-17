@@ -67,7 +67,7 @@ What is actually implemented today.
 - **GitHub sync** — matching a project's `github_repo` against your repos, pulling recent events
   into `github_activity` (deduplicated by `external_id`), updating `last_activity_at`, and storing a
   display string in `repo_metadata` (e.g. `⭐ 42 · 🐛 3 · TypeScript`). Each run is recorded in
-  `sync_runs`.
+  `sync_runs` and reports how many events were added versus already known.
 - **Design language** — OLED-black base with a glass/glow system. See [`DESIGN.md`](./DESIGN.md).
 
 ### Not implemented
@@ -256,8 +256,8 @@ The token is read from the `x-github-token` request header if present, falling b
 - **Renaming a project does not update its slug (by design).** Slug is a stable permalink set once
   at creation, so renaming a project leaves its URL working. A new project whose name collides gets
   a numeric suffix (`my-project`, `my-project-2`, …).
-- **GitHub sync is unpaginated.** It reads the first 100 repos and issues one events request per
-  linked repo plus a per-event existence check. The reported `skipped` count is always `0`.
+- **GitHub sync caps repo discovery at 1000 repos** (10 pages of 100) and performs no rate-limit
+  backoff. It still issues one events request per linked repo.
 - **URL normalization applies at write time only.** Resources captured before tracking parameters
   were stripped keep their stored `normalized_url`, so historical near-duplicates are not merged.
 
