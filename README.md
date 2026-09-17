@@ -124,6 +124,7 @@ dev-project-dashboard/
 │   ├── components/
 │   │   ├── ui/                     # glass-card, liquid-button, glow-input, header…
 │   │   ├── project-card.tsx
+│   │   ├── project-filter.tsx
 │   │   ├── project-dialog.tsx
 │   │   ├── project-actions.tsx
 │   │   ├── resource-list.tsx

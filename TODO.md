@@ -31,15 +31,6 @@ confirmed against the code on the date this file was last verified (see the stam
   there is no route or UI to create a link. The "Links" section can never populate through the app.
 - **Fix:** Add `POST`/`PATCH`/`DELETE` for project links plus UI in the project dialog.
 
-### 13. Six components are exported but never imported
-- **Logged:** 2026-09-16
-- **Details:** `src/components/project-header.tsx`, `src/components/ui/sidebar.tsx`,
-  `src/components/search-bar.tsx`, `src/components/ui/filters.tsx`,
-  `src/components/ui/dashboard-grid.tsx`, and `src/components/ui/empty-state.tsx` are re-exported
-  from `src/components/ui/index.ts` but used nowhere.
-- **Fix:** Delete them, or wire them up where intended. (`project-header.tsx` overlaps heavily with
-  the inline header in `src/app/projects/[slug]/page.tsx`.)
-
 ---
 
 ## Deferred

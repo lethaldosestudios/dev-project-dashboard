@@ -47,7 +47,7 @@ Real surfaces pair a glass step with a Tailwind opacity modifier and a blur leve
 | `accent-cyan` | `#06b6d4` | "Normal" priority, "create" activity, project-search focus glow |
 | `accent-emerald` | `#10b981` | "Active" status, "push" activity |
 | `accent-orange` | `#f59e0b` | "Paused" status |
-| `accent-secondary` | `#ff2d55` | Defined in config. **Zero references anywhere in `src/`** — see §9.1 |
+| `accent-secondary` | `#ff2d55` | Declared in the Tailwind config and mirrored as `--accent-secondary` in `src/app/tokens.css`, but no component uses it — see §9.1 |
 
 ### 2.4 Borders
 | Token | Value |
@@ -208,25 +208,30 @@ The micro-interactions actually shipping today are hand-written utility classes,
 `green` and `red` are the two broken variants — see §9.2.
 
 ### Badge / pill pattern — not yet componentized
-The same shape is hand-written in at least four places (`src/components/project-card.tsx`, `src/components/resource-list.tsx`, `src/components/attention-panel.tsx`, `src/app/projects/[slug]/page.tsx`): `text-xs px-2 py-1 rounded-full`, paired with either `bg-white/10 text-white/70` (neutral tag) or `bg-{accent}/20 text-{accent}` (semantic status/priority). It behaves like a component in every way except being one — see the recommendation in §10. (`src/components/project-header.tsx` implements the same pattern but is currently imported nowhere.)
+The same shape is hand-written in at least four places (`src/components/project-card.tsx`, `src/components/resource-list.tsx`, `src/components/attention-panel.tsx`, `src/app/projects/[slug]/page.tsx`): `text-xs px-2 py-1 rounded-full`, paired with either `bg-white/10 text-white/70` (neutral tag) or `bg-{accent}/20 text-{accent}` (semantic status/priority). It behaves like a component in every way except being one — see the recommendation in §10.
 
 ---
 
 ## 9. Token audit — known issues
 
-Two real gaps between how components consume tokens and how `tailwind.config.ts` defines them. Both fail silently: nothing throws, nothing warns, the class just doesn't generate any CSS, so the affected UI quietly loses its color instead of erroring.
+Two real gaps between how components consume tokens and how `tailwind.config.ts` defines them. Both fail silently: nothing throws, nothing warns, the class just doesn't generate any CSS, so the affected UI quietly loses its color instead of erroring. §9.3–§9.5 cover smaller issues in the same family.
 
 ### 9.1 `accent-red` is used everywhere but was never defined
-`text-accent-red` / `bg-accent-red` / `border-accent-red` appear **10 times across 5 files**:
-- `src/components/attention-panel.tsx` (3 uses)
-- `src/components/project-card.tsx` (2 uses)
-- `src/components/project-header.tsx` (2 uses)
-- `src/components/github-activity-feed.tsx` (1 use)
-- `src/app/projects/[slug]/page.tsx` (2 uses)
+`text-accent-red` / `bg-accent-red` / `border-accent-red` appear **16 times across 10 files**:
+- `src/components/attention-panel.tsx` (3)
+- `src/app/projects/[slug]/page.tsx` (2)
+- `src/components/project-card.tsx` (2)
+- `src/app/capture/page.tsx` (1)
+- `src/components/github-activity-feed.tsx` (1)
+- `src/components/github-sync-status.tsx` (1)
+- `src/components/project-actions.tsx` (1)
+- `src/components/project-dialog.tsx` (1)
+- `src/components/resource-actions.tsx` (1)
+- `src/components/resource-dialog.tsx` (1)
 
-`tailwind.config.ts` never declares an `accent.red` key. It does declare `accent.secondary: "#ff2d55"` — a color that fits the intended role exactly but is **never referenced by any component** (zero matches for `accent-secondary` in `src/`).
+`tailwind.config.ts` never declares an `accent.red` key. It does declare `accent.secondary: "#ff2d55"` — a color that fits the intended role exactly — but no component uses `accent-secondary`, and the one place the name appears (`--accent-secondary` in `src/app/tokens.css`) is read only by an inert theme namespace (see §9.5).
 
-**Effect:** every "high priority" badge, the stale/"needs attention" flag, and the "issue" activity icon render in whatever color they'd otherwise inherit (plain white) instead of the intended red/pink. The semantic urgency cue is silently missing from the live app.
+**Effect:** two roles are affected. The semantic ones — every "high priority" badge, the stale/"needs attention" flag, the "issue" activity icon — and plain error text in dialogs and banners. All of them render in whatever color they'd otherwise inherit (plain white) instead of the intended red/pink, so both the urgency cue and error emphasis are silently missing from the live app.
 
 **Fix:** rename `secondary` → `red` in `tailwind.config.ts` to match how it's actually consumed, or add `red: "#ff2d55"` as an additional key alongside `secondary`.
 
@@ -275,6 +280,13 @@ Worth deleting the entire `colors.glow` block at the same time — once `red`/`g
 
 ### 9.4 Minor — `/settings` is thin
 `src/app/settings/page.tsx` is themed, but minimal: a page heading plus the `BookmarkletInstall` card. It carries none of the stat strips or card grids the other pages have, so it reads as unfinished beside them. Not a defect — noted so it isn't mistaken for an oversight.
+
+### 9.5 Minor — the `tokens` theme namespace is inert
+`tailwind.config.ts` declares a `theme.extend.tokens` block mapping `bg` / `fg` / `accent.*` / `ring` to the CSS custom properties in `src/app/tokens.css`. Tailwind only generates utilities from known theme namespaces (`colors`, `spacing`, `boxShadow`, …), so `tokens` produces no classes at all and nothing in `src/` can consume it. The custom properties themselves still resolve, because `globals.css` imports `tokens.css` — they are simply unreachable through Tailwind.
+
+**Effect:** currently harmless, since no component references a `tokens`-derived class. It is the same class of mistake as §9.2 — a value in the wrong place, failing silently.
+
+**Fix:** move the mappings into the namespaces that actually generate usage (`colors` for `bg`/`fg`/`accent.*`, `ringColor` for `ring`), or delete the block and keep consuming `var(--…)` directly in `globals.css` utilities, as the existing rules already do.
 
 ---
 

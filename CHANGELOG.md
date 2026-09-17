@@ -14,6 +14,11 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- Deleted six components that were exported but imported nowhere — `project-header.tsx`,
+  `ui/sidebar.tsx`, `search-bar.tsx`, `ui/filters.tsx`, `ui/dashboard-grid.tsx`,
+  `ui/empty-state.tsx` — along with the `ui/index.ts` barrel that re-exported them. DESIGN.md's
+  §9.1 count was recalculated (10 uses across 5 files → 16 across 10, the previous figure omitted
+  the error-text usages) and §9.5 was added for the inert `theme.extend.tokens` namespace.
 - Hardened GitHub sync. It stopped at the first 100 repos with no pagination, ran a `SELECT` and an
   `INSERT` per event, and reported `skipped: 0` regardless. `listAllUserRepos()`
   (`src/lib/github.ts`) now pages (capped at 10 pages), the existence check is one `IN (...)`

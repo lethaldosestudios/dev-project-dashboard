@@ -50,7 +50,7 @@ const GITHUB_NAME_RE = /^[a-zA-Z0-9._-]+$/;
 
 /**
  * Normalize a pasted GitHub repository reference to the canonical `owner/repo`
- * form expected by the sync lookup and the project-header link.
+ * form expected by the sync lookup and the project detail header link.
  *
  * Accepts bare `owner/repo`, `https://github.com/owner/repo` (optionally with a
  * `www` subdomain, query string, fragment, leading `github.com/`, or a `.git`
