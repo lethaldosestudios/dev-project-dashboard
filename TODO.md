@@ -56,12 +56,6 @@ confirmed against the code on the date this file was last verified (see the stam
   two disagree (the type module requires `created_at`; the client module omits it).
 - **Fix:** Keep one definition and import it.
 
-### 15. `GET /api/resources` silently truncates
-- **Logged:** 2026-09-16
-- **Details:** Without a `projectId`, the route applies `LIMIT 100` with no indication in the
-  response that more rows exist.
-- **Fix:** Paginate, or return a total so the UI can tell the difference.
-
 ---
 
 ## Deferred

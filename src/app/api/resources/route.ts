@@ -5,17 +5,64 @@ import { normalizeUrl, extractDomain } from "@/lib/utils";
 import { requireAuth } from "@/lib/auth";
 import { findDuplicateResource } from "@/lib/resources";
 
+const DEFAULT_LIMIT = 100;
+const MAX_LIMIT = 500;
+
+function parsePaging(searchParams: URLSearchParams): { limit: number; offset: number } | null {
+  const rawLimit = searchParams.get("limit");
+  const rawOffset = searchParams.get("offset");
+
+  const limit = rawLimit === null ? DEFAULT_LIMIT : Number(rawLimit);
+  const offset = rawOffset === null ? 0 : Number(rawOffset);
+
+  if (!Number.isInteger(limit) || limit < 1 || limit > MAX_LIMIT) return null;
+  if (!Number.isInteger(offset) || offset < 0) return null;
+
+  return { limit, offset };
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const projectId = searchParams.get("projectId");
+
+  const paging = parsePaging(searchParams);
+  if (!paging) {
+    return NextResponse.json(
+      { error: `limit must be an integer from 1 to ${MAX_LIMIT}, and offset an integer of 0 or greater` },
+      { status: 400 }
+    );
+  }
+  const { limit, offset } = paging;
+
   const db = await getDb();
 
-  const query = projectId
-    ? db.prepare("SELECT * FROM resources WHERE project_id = ? ORDER BY created_at DESC").bind(projectId)
-    : db.prepare("SELECT * FROM resources ORDER BY created_at DESC LIMIT 100");
+  // Two explicit branches rather than an assembled WHERE clause, so no part of the SQL is built
+  // from request input.
+  const [countRow, list] = projectId
+    ? await Promise.all([
+        db
+          .prepare("SELECT COUNT(*) AS total FROM resources WHERE project_id = ?")
+          .bind(projectId)
+          .first<{ total: number }>(),
+        db
+          .prepare("SELECT * FROM resources WHERE project_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?")
+          .bind(projectId, limit, offset)
+          .all(),
+      ])
+    : await Promise.all([
+        db.prepare("SELECT COUNT(*) AS total FROM resources").first<{ total: number }>(),
+        db
+          .prepare("SELECT * FROM resources ORDER BY created_at DESC LIMIT ? OFFSET ?")
+          .bind(limit, offset)
+          .all(),
+      ]);
 
-  const { results } = await query.all();
-  return NextResponse.json({ resources: results });
+  return NextResponse.json({
+    resources: list.results,
+    total: countRow?.total ?? 0,
+    limit,
+    offset,
+  });
 }
 
 export async function POST(req: Request) {

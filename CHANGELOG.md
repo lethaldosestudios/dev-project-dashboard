@@ -14,6 +14,9 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- `GET /api/resources` is paginated. It applied a silent `LIMIT 100`, so a caller could not tell
+  whether there were exactly 100 resources or more. It now accepts `limit` (1–500, default 100) and
+  `offset`, and returns `total`, `limit`, and `offset` alongside `resources`.
 - `normalizeUrl` now strips tracking parameters (`utm_*`, `fbclid`, `gclid`, `msclkid`, `mc_eid`,
   `igshid`, `igsh`) before dedupe, so campaign variants of the same page are one resource. Applies
   at write time only — existing rows keep their stored `normalized_url`. Added
