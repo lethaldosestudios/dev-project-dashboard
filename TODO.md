@@ -137,6 +137,16 @@ confirmed against the code on the date this file was last verified (see the stam
   the query string, so `?utm_source=…` variants of the same page are treated as distinct resources.
 - **Fix:** Strip known tracking parameters before comparison.
 
+### 17. `pnpm test` fails when `NODE_ENV=production` is exported
+- **Logged:** 2026-09-16
+- **Details:** Jest defers to an explicitly set `NODE_ENV`, so when the shell exports
+  `NODE_ENV=production`, React resolves to its production build and every suite fails with
+  "act(...) is not supported in production builds of React". Both suites pass under
+  `NODE_ENV=test`. This environment exports `NODE_ENV=production`, so the documented `pnpm test`
+  command does not work as written here.
+- **Fix:** Pin `NODE_ENV=test` in the Jest configuration or the test script, so the result does not
+  depend on the caller's shell.
+
 ---
 
 ## Deferred

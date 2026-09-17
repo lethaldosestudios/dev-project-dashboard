@@ -214,7 +214,7 @@ The same shape is hand-written in at least four places (`src/components/project-
 
 ## 9. Token audit — known issues
 
-Two real gaps between how components consume tokens and how `tailwind.config.ts` defines them. Both fail silently: nothing throws, nothing warns, the class just doesn't generate any CSS, so the affected UI quietly loses its color instead of erroring. `design-token-proof.html` renders both live.
+Two real gaps between how components consume tokens and how `tailwind.config.ts` defines them. Both fail silently: nothing throws, nothing warns, the class just doesn't generate any CSS, so the affected UI quietly loses its color instead of erroring.
 
 ### 9.1 `accent-red` is used everywhere but was never defined
 `text-accent-red` / `bg-accent-red` / `border-accent-red` appear **10 times across 5 files**:
