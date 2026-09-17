@@ -34,9 +34,8 @@ Respond in **English**.
   for anything that loops and queries per-iteration (see `sync/github/route.ts`'s
   per-repo, per-event query pattern as the existing baseline — new code should not make
   this pattern worse without reason).
-- **A minimal Jest suite exists** (ts-jest + @testing-library/react, 2 component
-  suites). Don't block merges solely for "missing tests" — see Testing Standards below
-  for what to actually flag.
+- **A minimal Jest suite exists** (ts-jest + @testing-library/react, 3 suites). Don't block
+  merges solely for "missing tests" — see Testing Standards below for what to actually flag.
 - **Named workstreams (see `README.md` → Status, and `TODO.md`).** Phases 1–3 (CRUD, search,
   GitHub sync/stale detection, bookmarklet capture) are closed historical eras. Ordinal numbering
   above 3 was retired — the fourth phase number had come to mean three different things at once —
@@ -165,8 +164,8 @@ Respond in **English**.
 
 ## Testing Standards
 
-The repo has a minimal Jest suite (ts-jest + @testing-library/react, 2 component
-suites) — treat it as a light safety net, not full coverage. So:
+The repo has a minimal Jest suite (ts-jest + @testing-library/react, 3 suites) — treat it as a
+light safety net, not full coverage. So:
 - **Don't block a PR purely for "no tests" or low coverage.**
 - **Do flag** silent failure modes in critical paths — the sync job, capture dedupe
   logic, and validation logic are the highest-value places for a bug to hide

@@ -215,9 +215,14 @@ Development server: `http://localhost:3000`
 ## Authentication
 
 Production is protected by **Cloudflare Access**, which injects a `Cf-Access-User-Email` header
-after authenticating a request. `requireAuth()` in [`src/lib/auth.ts`](./src/lib/auth.ts) validates
-that header, and returns 401 if it is absent. Locally the check is bypassed when
-`NODE_ENV !== 'production'`.
+after authenticating a request. `requireAuth()` in [`src/lib/auth.ts`](./src/lib/auth.ts) accepts
+that header, and returns 401 if it is absent. The header is checked first, so a deployed Worker
+behind Access never falls through to the local bypass.
+
+Access does not run locally, so local development opts in explicitly by setting
+`DEV_AUTH_BYPASS=true` in [`.dev.vars.example`](./.dev.vars.example) (copied to `.dev.vars`). That
+file is gitignored and never deployed, so a production Worker cannot inherit the flag — and
+`requireAuth()` fails closed when the Cloudflare context is unavailable.
 
 Mutation routes that call `requireAuth()`:
 

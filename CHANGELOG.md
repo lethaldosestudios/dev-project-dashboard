@@ -14,6 +14,9 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- Replaced the implicit `NODE_ENV`-based auth bypass with an explicit `DEV_AUTH_BYPASS=true` opt-in
+  read from `.dev.vars`. The `Cf-Access-User-Email` header is now checked first, and `requireAuth()`
+  fails closed when the Cloudflare context is unavailable. Added `src/lib/auth.test.ts` (6 cases).
 - Pinned `NODE_ENV=test` in `jest.config.cjs`. Jest honours an explicitly set `NODE_ENV`, so a
   shell exporting `NODE_ENV=production` made React resolve to its production build and failed every
   suite with "act(...) is not supported in production builds of React".

@@ -100,16 +100,6 @@ confirmed against the code on the date this file was last verified (see the stam
 - **Fix:** Paginate repo discovery, batch the existence checks into a single `IN (...)` query, and
   report the real skipped count.
 
-### 12. `requireAuth()`'s production bypass depends on an inlined `NODE_ENV`
-- **Logged:** 2026-09-16
-- **Details:** `src/lib/auth.ts` bypasses auth whenever `process.env.NODE_ENV !== 'production'`.
-  There is no `middleware.ts`, so pages perform no auth of their own. This is almost certainly safe
-  because Next.js inlines `NODE_ENV` at build time for server code — but the entire
-  public-vs-authenticated boundary rests on that implicit substitution rather than an explicit
-  check.
-- **Fix:** Assert the environment explicitly (e.g. a dedicated `ALLOW_DEV_AUTH_BYPASS` flag), and
-  confirm behaviour on a deployed Worker.
-
 ### 13. Six components are exported but never imported
 - **Logged:** 2026-09-16
 - **Details:** `src/components/project-header.tsx`, `src/components/ui/sidebar.tsx`,

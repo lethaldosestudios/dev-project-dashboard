@@ -67,10 +67,13 @@ These make claims about the **current** state and must stay true:
 - **Database is Cloudflare D1** (SQLite), accessed with raw `prepare()`/`bind()` — there is no ORM.
   There is no service layer either: pages and route handlers both issue SQL directly against the
   helper in `src/lib/db.ts`.
-- **A minimal Jest suite exists** (ts-jest + @testing-library/react, 2 component suites). Do not
+- **A minimal Jest suite exists** (ts-jest + @testing-library/react, 3 suites). Do not
   treat test coverage as a blocking condition, but reason through edge cases explicitly.
 - **Auth is Cloudflare Access.** There is no application password or session cookie — if you find
-  documentation claiming one exists, that documentation is stale.
+  documentation claiming one exists, that documentation is stale. `requireAuth()` accepts only the
+  `Cf-Access-User-Email` header, plus an explicit `DEV_AUTH_BYPASS=true` opt-in that lives in the
+  never-deployed `.dev.vars`. Never make the bypass implicit again (for example by keying it off
+  `NODE_ENV`); it must fail closed when the Cloudflare context is unavailable.
 
 ---
 
