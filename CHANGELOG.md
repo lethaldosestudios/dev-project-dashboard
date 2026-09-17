@@ -14,6 +14,9 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- Added a **Feature parity** workstream to the roadmap, ordered between Hardening and Polish. Notes
+  edit/delete, tags, and project links are features rather than defects, and the owner's decision is
+  that they complete before refinement work begins. Hardening is complete.
 - Deleted six components that were exported but imported nowhere — `project-header.tsx`,
   `ui/sidebar.tsx`, `search-bar.tsx`, `ui/filters.tsx`, `ui/dashboard-grid.tsx`,
   `ui/empty-state.tsx` — along with the `ui/index.ts` barrel that re-exported them. DESIGN.md's

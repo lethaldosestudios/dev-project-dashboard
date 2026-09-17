@@ -11,6 +11,14 @@ confirmed against the code on the date this file was last verified (see the stam
 
 ## Open
 
+Items 1, 7, and 8 are **Feature parity** work — features with no write path, scheduled ahead of
+Polish rather than ad-hoc deferred. **Hardening** is complete: every defect it covered is fixed and
+recorded in [`CHANGELOG.md`](./CHANGELOG.md).
+
+| Workstream | Items |
+|---|---|
+| **Feature parity** (next) | 1, 7, 8 |
+
 ### 1. Notes are create-only — no edit or delete (feature gap)
 - **Logged:** 2026-09-11
 - **Details:** `POST /api/notes` creates a note, but there is no `src/app/api/notes/[id]/route.ts`

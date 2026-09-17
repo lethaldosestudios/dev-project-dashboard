@@ -33,7 +33,8 @@ mean three different things at once. Everything after Phase 3 is identified by n
 | Phase 2 | GitHub sync + stale detection | ✅ Closed |
 | Phase 3 | Quick capture (bookmarklet) | ✅ Closed |
 | — | **GitHub Sync** — repo linking, `repo_metadata`, real activity | ✅ Delivered 2026-09-13 |
-| — | **Hardening** — correctness & security fixes | 🔄 Next |
+| — | **Hardening** — correctness & security fixes | ✅ Delivered 2026-09-16 |
+| — | **Feature parity** — missing write paths (notes edit/delete, tags, project links) | 🔄 Next |
 | — | **Polish** — visual & functional refinement | ⏳ Queued |
 | — | **AI Features** — product-facing AI | ⏳ Deferred, not committed |
 
@@ -70,10 +71,13 @@ What is actually implemented today.
   `sync_runs` and reports how many events were added versus already known.
 - **Design language** — OLED-black base with a glass/glow system. See [`DESIGN.md`](./DESIGN.md).
 
-### Not implemented
+### Scheduled — Feature parity
 
-These exist in the schema or were previously claimed as features, but have **no write path**:
+These are committed work in the **Feature parity** workstream, which runs before Polish. None has a
+write path today:
 
+- **Notes edit/delete.** Notes can be created but not edited or deleted individually — there is no
+  `notes/[id]` route and no UI for it.
 - **Tagging.** `tags` and `resource_tags` are in [`db/schema.sql`](./db/schema.sql), but nothing
   ever inserts into them.
 - **Project links.** `project_links` is read and cascade-deleted, but there is no route or UI to
