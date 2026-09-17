@@ -15,8 +15,22 @@ export async function GET(req: Request) {
 
   const [projects, notes, resources] = await Promise.all([
     db.prepare("SELECT id, name, slug, 'project' as type FROM projects WHERE name LIKE ? OR description LIKE ?").bind(like, like).all(),
-    db.prepare("SELECT id, project_id, title, 'note' as type FROM notes WHERE title LIKE ? OR content_md LIKE ?").bind(like, like).all(),
-    db.prepare("SELECT id, project_id, title, url, 'resource' as type FROM resources WHERE title LIKE ? OR url LIKE ? OR note LIKE ?").bind(like, like, like).all(),
+    db
+      .prepare(
+        `SELECT n.id, n.project_id, n.title, p.slug AS project_slug, 'note' as type
+         FROM notes n LEFT JOIN projects p ON p.id = n.project_id
+         WHERE n.title LIKE ? OR n.content_md LIKE ?`
+      )
+      .bind(like, like)
+      .all(),
+    db
+      .prepare(
+        `SELECT r.id, r.project_id, r.title, r.url, p.slug AS project_slug, 'resource' as type
+         FROM resources r LEFT JOIN projects p ON p.id = r.project_id
+         WHERE r.title LIKE ? OR r.url LIKE ? OR r.note LIKE ?`
+      )
+      .bind(like, like, like)
+      .all(),
   ]);
 
   return NextResponse.json({

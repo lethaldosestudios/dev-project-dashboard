@@ -19,14 +19,6 @@ confirmed against the code on the date this file was last verified (see the stam
 - **Fix:** Add `src/app/api/notes/[id]/route.ts` with `PATCH`/`DELETE` (auth-guarded, following the
   `resources/[id]` pattern), plus edit/delete controls in the notes editor.
 
-### 2. Search results link to the wrong URL for notes and resources
-- **Logged:** 2026-09-16
-- **Details:** `src/app/search/page.tsx` builds note and resource links as
-  `/projects/<result.project_id>`, but the detail route resolves projects by **slug**
-  (`src/app/projects/[slug]/page.tsx`). `project_id` is a UUID, so those results land on
-  "Project not found".
-- **Fix:** Have `/api/search` return the project `slug` alongside `project_id`, and link with it.
-
 ### 3. Renaming a project does not update its slug
 - **Logged:** 2026-09-16
 - **Details:** `PATCH /api/projects/[id]` updates `name` but never `slug`, so every existing link

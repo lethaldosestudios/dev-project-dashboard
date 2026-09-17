@@ -14,6 +14,9 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- Fixed `/search` result links. Note and resource results linked to `/projects/<project_id>` — a
+  UUID — while the project detail route resolves by slug, so they landed on "Project not found".
+  `/api/search` now joins the owning project and returns `project_slug`.
 - Guarded `POST /api/capture` with `requireAuth()` and deleted the no-op `POST /api/sync/deploys`
   route, which returned `ok: true` while performing no work. The `docs:check` auth exemption
   allowlist is now empty, so the `requireAuth` rule is unconditionally enforced.

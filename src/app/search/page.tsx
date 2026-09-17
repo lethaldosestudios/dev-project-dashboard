@@ -14,6 +14,7 @@ interface SearchResult {
   title?: string;
   url?: string;
   project_id?: string;
+  project_slug?: string;
 }
 
 interface SearchResponse {
@@ -107,14 +108,14 @@ function ResultItem({ result }: { result: SearchResult }) {
     note: {
       icon: "📝",
       label: "Note",
-      href: `/projects/${result.project_id}`,
+      href: result.project_slug ? `/projects/${result.project_slug}` : "/projects",
       title: result.title || "Untitled note",
-      subtitle: result.project_id,
+      subtitle: result.project_slug,
     },
     resource: {
       icon: "🔗",
       label: "Resource",
-      href: result.url || `/projects/${result.project_id}`,
+      href: result.url || (result.project_slug ? `/projects/${result.project_slug}` : "/projects"),
       title: result.title || result.url || "Untitled resource",
       subtitle: result.url,
     },

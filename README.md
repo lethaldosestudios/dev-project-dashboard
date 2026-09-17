@@ -59,8 +59,8 @@ What is actually implemented today.
 - **Notes** — create plain-text notes with an optional title. Stored in `notes.content_md` and
   rendered as preformatted text. **Not markdown-rendered, and not editable or deletable** (see
   limitations).
-- **Search** (`/search`) — a debounced (300 ms) query across projects, notes, and resources.
-  Results for notes and resources currently link to a broken URL (see limitations).
+- **Search** (`/search`) — a debounced (300 ms) query across projects, notes, and resources. Note
+  and resource results link through to the owning project.
 - **Quick capture** (`/capture`) — a form prefilled from query params for saving a link in seconds.
   A **bookmarklet** generated from your current origin is installable from `/settings`.
 - **GitHub sync** — matching a project's `github_repo` against your repos, pulling recent events
@@ -252,12 +252,10 @@ The token is read from the `x-github-token` request header if present, falling b
 
 - **Notes are create-only.** There is no `notes/[id]` route and no edit/delete UI. Notes are
   removed only indirectly, by cascade, when their project is deleted.
-- **Search result links are broken for notes and resources.** [`src/app/search/page.tsx`](./src/app/search/page.tsx)
-  links to `/projects/<project_id>`, but the detail route resolves by **slug**. Those results land
-  on "Project not found".
-- **Renaming a project does not update its slug.** `PATCH /api/projects/[id]` writes `name` but not
-  `slug`, so existing links go stale. Because `slug` is `UNIQUE`, two projects with the same name
-  also cause an unhandled 500 on create.
+- **Renaming a project does not update its slug.** Slug is a stable permalink: it is set once at
+  creation, so renaming a project leaves its URL working.
+- **Two projects with the same name return a 500.** `slug` is `UNIQUE`, and the create path does
+  not yet handle the collision.
 - **Adding a note does not refresh the list.** [`src/components/notes-editor.tsx`](./src/components/notes-editor.tsx)
   never re-fetches, so a new note stays invisible until the page is reloaded.
 - **GitHub sync is unpaginated.** It reads the first 100 repos and issues one events request per
