@@ -13,11 +13,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # docs:check verifies that each state doc's `verified-against` stamp resolves to a
+          # real commit, so it needs full history rather than a shallow clone.
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Verify documentation against the code
+        run: node scripts/docs-check.mjs
 
       - name: Enable corepack and prepare pnpm
         run: |

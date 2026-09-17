@@ -159,8 +159,8 @@ function checkPhaseNumbers() {
 // ---------------------------------------------------------------------------
 // 4. Referenced files exist
 //
-// DESIGN.md described a companion "design-token-proof.html" that was never
-// committed. Any repo-relative path a doc names must resolve.
+// DESIGN.md described a companion token-proof HTML page that was never committed.
+// Any repo-relative path a doc names must resolve.
 // ---------------------------------------------------------------------------
 const PATH_PREFIX = /^(src|db|scripts|public|docs|archives|reports|\.github)\//;
 const ROOT_FILES = new Set([
