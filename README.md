@@ -49,8 +49,8 @@ What is actually implemented today.
 - **Dashboard** (`/`) — stat strip (total / active / needs attention / recent activity), an
   **attention panel** listing every project with no activity in 14+ days (or never), and a grid of
   active projects ordered by `last_activity_at` with per-project activity counts.
-- **Project list** (`/projects`) — the same stat strip and card grid across all active projects.
-  *The search input in this page's header is not wired to anything.*
+- **Project list** (`/projects`) — the same stat strip and card grid across all active projects, with
+  a client-side filter over name, description, stack, and linked repo.
 - **Project detail** (`/projects/[slug]`) — status/priority badges, repo metadata, a stats bar,
   project links, GitHub activity feed, resources, and notes.
 - **Resources** — add, edit, and delete links with an optional title and note. URLs are normalized

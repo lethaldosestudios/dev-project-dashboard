@@ -1,11 +1,8 @@
-// src/app/projects/page.tsx
-import Link from "next/link";
 import { getDb } from "@/lib/db";
-import { ProjectCard } from "@/components/project-card";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Header } from "@/components/ui/header";
 import { LiquidButton } from "@/components/ui/liquid-button";
-import { GlowInput } from "@/components/ui/glow-input";
+import { ProjectFilter } from "@/components/project-filter";
 import type { Project } from "@/types";
 import { ProjectDialog } from "@/components/project-dialog";
 
@@ -28,22 +25,15 @@ export default async function ProjectsPage() {
         title="Projects"
         subtitle="Manage all your development projects"
         actions={
-          <div className="flex items-center gap-3">
-            <GlowInput
-              placeholder="Search projects..."
-              className="w-full sm:w-64"
-              glowColor="cyan"
-            />
-            <ProjectDialog
-              mode="create"
-              trigger={
-                <LiquidButton variant="primary" size="sm">
-                  <PlusIcon className="w-4 h-4" />
-                  <span className="hidden sm:inline">New Project</span>
-                </LiquidButton>
-              }
-            />
-          </div>
+          <ProjectDialog
+            mode="create"
+            trigger={
+              <LiquidButton variant="primary" size="sm">
+                <PlusIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">New Project</span>
+              </LiquidButton>
+            }
+          />
         }
       />
 
@@ -63,11 +53,7 @@ export default async function ProjectsPage() {
           <p className="text-white/40 text-sm mt-1">Start by creating your first project.</p>
         </GlassCard>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {projects.map((p) => (
-            <ProjectCard key={p.id} project={p} />
-          ))}
-        </div>
+        <ProjectFilter projects={projects} />
       )}
     </main>
   );

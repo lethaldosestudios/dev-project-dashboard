@@ -31,14 +31,6 @@ confirmed against the code on the date this file was last verified (see the stam
   there is no route or UI to create a link. The "Links" section can never populate through the app.
 - **Fix:** Add `POST`/`PATCH`/`DELETE` for project links plus UI in the project dialog.
 
-### 9. The `/projects` header search input is not wired
-- **Logged:** 2026-09-16
-- **Details:** `src/app/projects/page.tsx` renders a `GlowInput` in its header with no `value` or
-  `onChange`, so typing does nothing. The page also does not render the `Filters` or `SearchBar`
-  components that exist for this purpose.
-- **Fix:** Wire the input to a filter over the rendered projects, or remove it and point at
-  `/search`.
-
 ### 10. Capture dedupe scope differs from resource dedupe scope
 - **Logged:** 2026-09-16
 - **Details:** `POST /api/capture` dedupes `normalized_url` **globally**, while

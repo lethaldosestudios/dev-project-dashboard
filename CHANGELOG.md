@@ -14,6 +14,9 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- Wired the `/projects` filter. The header input had no value or change handler, so typing did
+  nothing; filtering now happens client-side over name, description, stack, and linked repo, via the
+  new `src/components/project-filter.tsx`.
 - Adding a note now refreshes the list. `NotesEditor` posted the note but never re-rendered, so a
   successfully saved note stayed invisible until the page was reloaded, which read as a failed save.
 - `POST /api/projects` no longer fails when two projects share a name. `projects.slug` is UNIQUE and
