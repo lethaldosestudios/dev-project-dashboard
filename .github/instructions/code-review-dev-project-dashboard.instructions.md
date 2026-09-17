@@ -67,11 +67,11 @@ Respond in **English**.
   single-user, so the concern isn't cross-tenant access — it's that any exposed
   `POST`/`PATCH`/`DELETE` route is a public, unauthenticated write endpoint unless it
   calls `requireAuth()`. Auth is Cloudflare Access only, validated against the
-  `Cf-Access-User-Email` header in `src/lib/auth.ts` — there is **no** password or
-  session cookie. Every mutation handler must call `requireAuth()`; the only two declared
-  exceptions are `POST /api/capture` and `POST /api/sync/deploys`, both tracked in
-  `TODO.md`, and `pnpm docs:check` fails if a third appears undeclared. Flag any route
-  that trusts a client-supplied identity/token without validating it server-side.
+  `Cf-Access-User-Email` header in `src/lib/auth.ts`, with a local-only `DEV_AUTH_BYPASS`
+  opt-in — there is **no** password or session cookie. Every mutation handler must call
+  `requireAuth()`, and the exemption allowlist in `scripts/docs-check.mjs` is currently
+  empty, so `pnpm docs:check` fails if any route appears undeclared. Flag any route that
+  trusts a client-supplied identity/token without validating it server-side.
 - **Data loss risk**: destructive operations (deletes, bulk updates) on `projects`,
   `resources`, `notes`, `github_activity` without a guard. The existing guards are
   soft-delete via `archived_at`, an explicit UI confirmation, and scoping by id. Note
@@ -247,9 +247,9 @@ Workers/D1) or its single-user trust model — not generic enterprise reasoning.
 **🔴 CRITICAL - Security: Unauthenticated mutation route**
 
 `POST /api/projects/[id]/archive` (new in this PR) performs a destructive update with
-no auth check. Every other mutation route in this repo calls `requireAuth()`; the only
-exceptions are the two declared in `AGENTS.md` and tracked in `TODO.md`. This route has
-neither a check nor a declaration.
+no auth check. Every mutation route in this repo calls `requireAuth()`, and the
+exemption allowlist in `scripts/docs-check.mjs` is empty. This route has neither a check
+nor a declaration.
 
 **Why this matters:**
 This app is deployed to a public Cloudflare Workers URL. Without an auth check, anyone

@@ -119,8 +119,7 @@ dev-project-dashboard/
 │   │       ├── search/route.ts              # GET
 │   │       ├── capture/route.ts             # POST
 │   │       └── sync/
-│   │           ├── github/route.ts          # POST, GET
-│   │           └── deploys/route.ts         # POST (no-op stub)
+│   │           └── github/route.ts          # POST, GET
 │   ├── components/
 │   │   ├── ui/                     # glass-card, liquid-button, glow-input, header…
 │   │   ├── project-card.tsx
@@ -224,21 +223,17 @@ Access does not run locally, so local development opts in explicitly by setting
 file is gitignored and never deployed, so a production Worker cannot inherit the flag — and
 `requireAuth()` fails closed when the Cloudflare context is unavailable.
 
-Mutation routes that call `requireAuth()`:
+Every mutation route calls `requireAuth()`:
 
 - `POST /api/projects`, `PATCH`/`DELETE /api/projects/[id]`
 - `POST /api/resources`, `PATCH`/`DELETE /api/resources/[id]`
 - `POST /api/notes`
+- `POST /api/capture`
 - `POST`/`GET /api/sync/github`
 
-**Two mutation routes currently do not**, and are tracked in [`TODO.md`](./TODO.md):
-
-- `POST /api/capture` — relies on the bookmarklet running in an already-authenticated browser
-  session.
-- `POST /api/sync/deploys` — a no-op stub that writes nothing but its own `sync_runs` row.
-
 Read endpoints (list, detail, search) are left open by design: this is a single-user app, and the
-boundary that matters is public-internet-vs-authenticated.
+boundary that matters is public-internet-vs-authenticated. `pnpm docs:check` enforces this list —
+its exemption allowlist is empty, so a new mutation route without a check fails CI.
 
 ---
 

@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";
 import { normalizeUrl, extractDomain } from "@/lib/utils";
+import { requireAuth } from "@/lib/auth";
 
 const allowedSavedVia = new Set(["manual", "bookmarklet", "extension", "ai"]);
 
 export async function POST(req: Request) {
+  const auth = await requireAuth(req);
+  if (auth instanceof Response) return auth;
+
   let body: Record<string, unknown>;
   try {
     body = await req.json() as Record<string, unknown>;

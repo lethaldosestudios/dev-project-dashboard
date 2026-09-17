@@ -44,25 +44,6 @@ confirmed against the code on the date this file was last verified (see the stam
 - **Fix:** Call `router.refresh()` after a successful post, matching `ProjectDialog` and
   `ResourceDialog`.
 
-### 5. Two mutation routes do not call `requireAuth()`
-- **Logged:** 2026-09-16
-- **Details:** `POST /api/capture` and `POST /api/sync/deploys` are the only mutation handlers in
-  `src/app/api/` without an auth check. `AGENTS.md` mandates one on every `POST`/`PATCH`/`DELETE`.
-  They are declared exemptions in `scripts/docs-check.mjs` so the omission is explicit rather than
-  silent, but the rule should hold with zero exemptions.
-- **Why it may be intentional:** `/api/capture` is the bookmarklet target, which runs in an
-  already-authenticated browser session; `/api/sync/deploys` is a no-op stub that writes only its
-  own `sync_runs` row. Confirm the intent before changing either.
-- **Fix:** Add `requireAuth()` to both (then remove them from the exemption allowlist), or document
-  them as deliberately public in [`README.md`](./README.md) and `AGENTS.md`.
-
-### 6. `POST /api/sync/deploys` is a no-op stub
-- **Logged:** 2026-09-16
-- **Details:** The route writes a `sync_runs` row and returns success without performing any work.
-  It reports `records_processed: 0` and `ok: true`, which is indistinguishable from a successful
-  sync.
-- **Fix:** Either implement deploy sync, or remove the route until it is real.
-
 ### 7. Tagging has no write path
 - **Logged:** 2026-09-16
 - **Details:** `tags` and `resource_tags` exist in `db/schema.sql`, but no route or component ever
@@ -143,7 +124,8 @@ Product-facing AI capabilities. **Not committed work.** Explicitly separate from
 and never ships into the app.
 
 ### Deploy sync
-Vercel/Cloudflare deploy widgets. Currently represented only by the no-op stub in item 6.
+Vercel/Cloudflare deploy widgets. Not started — the no-op placeholder route was removed on
+2026-09-16, so there is no stub to build on.
 
 ---
 

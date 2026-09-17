@@ -57,18 +57,11 @@ const githubDocs = () => walk(".github", isMarkdown);
 //
 // AGENTS.md mandates requireAuth() on every POST/PATCH/DELETE handler. Two routes
 // historically violated it, so the rule is now machine-checked. Exemptions must be
-// declared here with a reason — they can never be silently skipped.
+// declared here with a reason — they can never be silently skipped. This list is
+// currently EMPTY, so the rule is unconditionally true; remove an entry the moment
+// its exception closes.
 // ---------------------------------------------------------------------------
-const AUTH_EXEMPT = new Map([
-  [
-    "src/app/api/capture/route.ts",
-    "Bookmarklet opens /capture in an already-authenticated browser session",
-  ],
-  [
-    "src/app/api/sync/deploys/route.ts",
-    "No-op stub: writes only its own sync_runs row, no project data",
-  ],
-]);
+const AUTH_EXEMPT = new Map([]);
 
 function checkAuthCoverage() {
   const routes = walk("src/app/api", (p) => p.endsWith("route.ts"));

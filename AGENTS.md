@@ -96,10 +96,10 @@ These make claims about the **current** state and must stay true:
 - **Edge runtime on API routes:** `export const runtime = 'edge'` is not supported by OpenNext
   Cloudflare for `app/api/` routes. Flag any new route that adds it.
 - **Auth on mutation routes:** Every `POST`/`PATCH`/`DELETE` API handler must call `requireAuth()`
-  from `src/lib/auth.ts` at the top and return its 401 response early. There are currently **two
-  declared exceptions** — `POST /api/capture` and `POST /api/sync/deploys` — both tracked in
-  [`TODO.md`](./TODO.md). `scripts/docs-check.mjs` fails if a third route appears without either a
-  check or a declared exemption, so the rule can never quietly become false again.
+  from `src/lib/auth.ts` at the top and return its 401 response early. There are currently **no
+  exceptions** — the exemption allowlist in `scripts/docs-check.mjs` is empty, and the check fails
+  if any route appears without a check or an explicit, reasoned declaration. Never add an entry
+  without a stated reason, and remove it the moment the exception closes.
 - **Client/server boundary:** Flag unnecessary `"use client"` directives, and flag any server-only
   logic (DB access, secrets) reachable from a client component.
 

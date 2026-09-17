@@ -14,6 +14,9 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- Guarded `POST /api/capture` with `requireAuth()` and deleted the no-op `POST /api/sync/deploys`
+  route, which returned `ok: true` while performing no work. The `docs:check` auth exemption
+  allowlist is now empty, so the `requireAuth` rule is unconditionally enforced.
 - Replaced the implicit `NODE_ENV`-based auth bypass with an explicit `DEV_AUTH_BYPASS=true` opt-in
   read from `.dev.vars`. The `Cf-Access-User-Email` header is now checked first, and `requireAuth()`
   fails closed when the Cloudflare context is unavailable. Added `src/lib/auth.test.ts` (6 cases).
