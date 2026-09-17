@@ -19,14 +19,6 @@ confirmed against the code on the date this file was last verified (see the stam
 - **Fix:** Add `src/app/api/notes/[id]/route.ts` with `PATCH`/`DELETE` (auth-guarded, following the
   `resources/[id]` pattern), plus edit/delete controls in the notes editor.
 
-### 4. Adding a note does not refresh the list
-- **Logged:** 2026-09-16
-- **Details:** `src/components/notes-editor.tsx` posts the new note but never re-renders — the
-  component's own comment acknowledges the gap. A newly added note stays invisible until the page
-  is manually reloaded, which reads as a failed save.
-- **Fix:** Call `router.refresh()` after a successful post, matching `ProjectDialog` and
-  `ResourceDialog`.
-
 ### 7. Tagging has no write path
 - **Logged:** 2026-09-16
 - **Details:** `tags` and `resource_tags` exist in `db/schema.sql`, but no route or component ever

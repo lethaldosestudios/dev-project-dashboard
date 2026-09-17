@@ -255,8 +255,6 @@ The token is read from the `x-github-token` request header if present, falling b
 - **Renaming a project does not update its slug (by design).** Slug is a stable permalink set once
   at creation, so renaming a project leaves its URL working. A new project whose name collides gets
   a numeric suffix (`my-project`, `my-project-2`, …).
-- **Adding a note does not refresh the list.** [`src/components/notes-editor.tsx`](./src/components/notes-editor.tsx)
-  never re-fetches, so a new note stays invisible until the page is reloaded.
 - **GitHub sync is unpaginated.** It reads the first 100 repos and issues one events request per
   linked repo plus a per-event existence check. The reported `skipped` count is always `0`.
 - **Capture dedupe is global, resource dedupe is per project.** The same URL saved through the

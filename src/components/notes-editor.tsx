@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "./ui/glass-card";
 import { LiquidButton } from "./ui/liquid-button";
 import { GlowInput } from "./ui/glow-input";
@@ -13,6 +14,7 @@ interface NotesEditorProps {
 }
 
 export function NotesEditor({ projectId, notes }: NotesEditorProps) {
+  const router = useRouter();
   const [newNoteTitle, setNewNoteTitle] = useState("");
   const [newNoteContent, setNewNoteContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,7 +39,7 @@ export function NotesEditor({ projectId, notes }: NotesEditorProps) {
       if (response.ok) {
         setNewNoteTitle("");
         setNewNoteContent("");
-        // In a real app, you'd refresh the notes list here
+        router.refresh();
       }
     } catch (err) {
       console.error("Failed to add note:", err);

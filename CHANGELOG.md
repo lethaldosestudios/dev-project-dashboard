@@ -14,6 +14,8 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- Adding a note now refreshes the list. `NotesEditor` posted the note but never re-rendered, so a
+  successfully saved note stayed invisible until the page was reloaded, which read as a failed save.
 - `POST /api/projects` no longer fails when two projects share a name. `projects.slug` is UNIQUE and
   the insert was unhandled, so the second create threw a 500. `uniqueProjectSlug()`
   (`src/lib/projects.ts`) now assigns the first free slug (`foo`, `foo-2`, …). Slug is confirmed as
