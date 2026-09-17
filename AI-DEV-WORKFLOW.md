@@ -1,12 +1,12 @@
+<!-- verified-against: b5396e5bbd2ca0b8b166b122ef9f9af8ad429e38 | verified: 2026-09-16 -->
 # AI Development Workflow
 
-**Date:** 2026-07-29
 **Project:** `dev-project-dashboard`
-**Status:** Active plan
+**Status:** Reference — dev-time tooling. Not a product workstream.
 
-> **Note:** AI-assisted *development* is a dev-time workflow used to build this
-> repository — not a product phase of the dashboard. See `README.md` / `TODO.md`
-> for the roadmap (Phase 4 = Polish & Iterate, Phase 5 = Optional AI features).
+> **Note:** AI-assisted *development* is a dev-time workflow used to build this repository — not a
+> product feature of the dashboard, and not a roadmap item. See `README.md` → Status and
+> `TODO.md` for what is actually planned.
 
 ## Decision
 
@@ -58,10 +58,12 @@ Use as the architecture and verification model for:
 
 ## Secret handling
 
-Use one development-only NVIDIA API key per coding assistant app for any/all available free-endpoint models:
+Use one development-only NVIDIA API key per coding-assistant app, for whichever free-endpoint
+models that app exposes.
 
-
-Store these in encrypted/locked file (only Porter has access) or the development environment used by the model-invocation workflow. Do not place them in the dashboard's `.env.example`, application runtime, browser bundle, Git history, or public deployment.
+Store the key in an encrypted or access-controlled file (only Porter has access), or in the
+development environment used by the model-invocation workflow. Do not place it in the dashboard's
+`.env.example`, application runtime, browser bundle, Git history, or public deployment.
 
 ## Guardrails
 
@@ -73,4 +75,9 @@ Store these in encrypted/locked file (only Porter has access) or the development
 
 ## Next implementation target
 
-Continue with the next user-visible dashboard milestone. Use the three-model workflow above to plan and implement it. Do not create runtime AI routes in the shipped app unless the product requirement explicitly changes to an in-app AI feature (see Phase 5 — Optional AI features in `README.md` / `TODO.md`).
+Continue with the next user-visible dashboard milestone, tracked in `TODO.md`. Use the three-model
+workflow above to plan and implement it.
+
+Do not create runtime AI routes in the shipped app unless the product requirement explicitly
+changes to an in-app AI feature — that is the **AI Features** workstream in `README.md` → Status,
+which is deferred and not committed work.

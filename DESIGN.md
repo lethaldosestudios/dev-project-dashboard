@@ -1,8 +1,7 @@
+<!-- verified-against: b5396e5bbd2ca0b8b166b122ef9f9af8ad429e38 | verified: 2026-09-16 -->
 # Design System — Dev Project Dashboard
 
-This documents the design system as it actually exists in the codebase today (Phase 2), reverse-engineered from `tailwind.config.ts`, `src/app/globals.css`, and every component under `src/`. Where the code disagrees with itself, §9 says so explicitly rather than papering over it.
-
-**Companion file:** `design-token-proof.html` — open it directly in a browser (no build step) to see every token below rendered live, including the two broken tokens from §9 shown as actual failures, not just descriptions of them.
+This documents the design system as it actually exists in the codebase today, reverse-engineered from `tailwind.config.ts`, `src/app/globals.css`, and every component under `src/`. Where the code disagrees with itself, §9 says so explicitly rather than papering over it.
 
 ---
 
@@ -163,7 +162,7 @@ A custom scale that overrides Tailwind's defaults outright (same key names, diff
 | easing `smooth` | `cubic-bezier(0.4, 0, 0.2, 1)` | Defined, not yet explicitly applied anywhere |
 | easing `bounce-in` | `cubic-bezier(0.68, -0.55, 0.265, 1.55)` | Defined, not yet used |
 
-Keyframe animations are fully defined in both `tailwind.config.ts` and `globals.css`, but **none are currently applied in any component.** They read as pre-built inventory for the "Phase 5: Polish" milestone in the README roadmap:
+Keyframe animations are fully defined in both `tailwind.config.ts` and `globals.css`, but **none are currently applied in any component.** They read as pre-built inventory for the **Polish** workstream described in `README.md` → Status:
 
 | Animation | Duration | Effect |
 |---|---|---|
@@ -209,7 +208,7 @@ The micro-interactions actually shipping today are hand-written utility classes,
 `green` and `red` are the two broken variants — see §9.2.
 
 ### Badge / pill pattern — not yet componentized
-The same shape is hand-written in at least four places (`project-card.tsx`, `project-header.tsx`, `resource-list.tsx`, `github-activity-feed.tsx`): `text-xs px-2 py-1 rounded-full`, paired with either `bg-white/10 text-white/70` (neutral tag) or `bg-{accent}/20 text-{accent}` (semantic status/priority). It behaves like a component in every way except being one — see the recommendation in §10.
+The same shape is hand-written in at least four places (`src/components/project-card.tsx`, `src/components/resource-list.tsx`, `src/components/attention-panel.tsx`, `src/app/projects/[slug]/page.tsx`): `text-xs px-2 py-1 rounded-full`, paired with either `bg-white/10 text-white/70` (neutral tag) or `bg-{accent}/20 text-{accent}` (semantic status/priority). It behaves like a component in every way except being one — see the recommendation in §10. (`src/components/project-header.tsx` implements the same pattern but is currently imported nowhere.)
 
 ---
 
@@ -272,10 +271,10 @@ boxShadow: {
 Worth deleting the entire `colors.glow` block at the same time — once `red`/`green` move out, nothing legitimate is left in it.
 
 ### 9.3 Minor — icon strategy is split
-`lucide-react` is a listed dependency, but no component currently imports from it. Every icon in the app today is either a hand-rolled inline SVG (`PlusIcon`, `SearchIcon`, `SyncIcon`, each redefined per-file) or an emoji used for empty states and stat labels. Not a bug, but worth a deliberate call before more icons get added — either commit to `lucide-react` and delete the duplicated inline SVGs, or drop the dependency.
+`lucide-react` is a dependency, but only two files use it: `src/app/capture/page.tsx` and `src/components/bookmarklet-install.tsx`. Everywhere else, icons are either hand-rolled inline SVGs (`PlusIcon`, `SearchIcon`, `SyncIcon`, each redefined per-file) or emoji used for empty states and stat labels. Not a bug, but worth a deliberate call before more icons get added — either commit to `lucide-react` and delete the duplicated inline SVGs, or drop the dependency.
 
-### 9.4 Minor — `/settings` isn't themed yet
-`src/app/settings/page.tsx` is a bare stub (`<main className="p-8">`) with none of the glass/accent system applied. Expected at this stage of the roadmap — noted here so it isn't mistaken for an oversight later.
+### 9.4 Minor — `/settings` is thin
+`src/app/settings/page.tsx` is themed, but minimal: a page heading plus the `BookmarkletInstall` card. It carries none of the stat strips or card grids the other pages have, so it reads as unfinished beside them. Not a defect — noted so it isn't mistaken for an oversight.
 
 ---
 
@@ -290,5 +289,4 @@ Worth deleting the entire `colors.glow` block at the same time — once `red`/`g
 ---
 
 ## 11. Reference
-- **Live proof:** `design-token-proof.html` — every token in this document, rendered, plus the two `text-accent-red` / `shadow-glow-red` failures shown as they actually appear in the running app.
 - **Source of truth:** `tailwind.config.ts`, `src/app/globals.css`, `src/components/ui/glass-card.tsx`, `src/components/ui/liquid-button.tsx`, `src/components/ui/glow-input.tsx`.
