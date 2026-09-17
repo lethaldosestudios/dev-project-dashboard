@@ -1,8 +1,28 @@
 // src/lib/utils.ts
+// Query parameters that identify where a visit came from rather than which resource was visited.
+// Stripped before comparison so tracking variants of the same page dedupe to one resource.
+const TRACKING_PARAM_PREFIXES = ["utm_"];
+const TRACKING_PARAMS = new Set(["fbclid", "gclid", "msclkid", "mc_eid", "igshid", "igsh"]);
+
+function isTrackingParam(name: string): boolean {
+  const lower = name.toLowerCase();
+  return (
+    TRACKING_PARAMS.has(lower) ||
+    TRACKING_PARAM_PREFIXES.some((prefix) => lower.startsWith(prefix))
+  );
+}
+
 export function normalizeUrl(input: string): string {
   try {
     const u = new URL(input);
     u.hash = "";
+
+    const kept = [...u.searchParams.entries()].filter(([name]) => !isTrackingParam(name));
+    u.search = "";
+    for (const [name, value] of kept) {
+      u.searchParams.append(name, value);
+    }
+
     return u.toString().replace(/\/$/, "");
   } catch {
     return input.trim();

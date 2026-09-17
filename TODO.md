@@ -62,12 +62,6 @@ confirmed against the code on the date this file was last verified (see the stam
   response that more rows exist.
 - **Fix:** Paginate, or return a total so the UI can tell the difference.
 
-### 16. URL normalization keeps query strings, weakening dedupe
-- **Logged:** 2026-09-16
-- **Details:** `normalizeUrl` in `src/lib/utils.ts` strips the fragment and trailing slash but keeps
-  the query string, so `?utm_source=…` variants of the same page are treated as distinct resources.
-- **Fix:** Strip known tracking parameters before comparison.
-
 ---
 
 ## Deferred

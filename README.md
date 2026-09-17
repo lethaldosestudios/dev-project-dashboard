@@ -54,8 +54,9 @@ What is actually implemented today.
 - **Project detail** (`/projects/[slug]`) — status/priority badges, repo metadata, a stats bar,
   project links, GitHub activity feed, resources, and notes.
 - **Resources** — add, edit, and delete links with an optional title and note. URLs are normalized
-  (fragment and trailing slash stripped) and deduplicated on one rule: **a URL may exist once per
-  project, and once unassigned**. The domain and `saved_via` source are recorded.
+  (fragment, trailing slash, and tracking parameters such as `utm_*` / `fbclid` stripped) and
+  deduplicated on one rule: **a URL may exist once per project, and once unassigned**. The domain
+  and `saved_via` source are recorded.
 - **Notes** — create plain-text notes with an optional title. Stored in `notes.content_md` and
   rendered as preformatted text. **Not markdown-rendered, and not editable or deletable** (see
   limitations).
@@ -257,6 +258,8 @@ The token is read from the `x-github-token` request header if present, falling b
   a numeric suffix (`my-project`, `my-project-2`, …).
 - **GitHub sync is unpaginated.** It reads the first 100 repos and issues one events request per
   linked repo plus a per-event existence check. The reported `skipped` count is always `0`.
+- **URL normalization applies at write time only.** Resources captured before tracking parameters
+  were stripped keep their stored `normalized_url`, so historical near-duplicates are not merged.
 
 Each of these is recorded in [`TODO.md`](./TODO.md).
 

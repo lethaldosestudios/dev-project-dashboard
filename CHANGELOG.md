@@ -14,6 +14,10 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- `normalizeUrl` now strips tracking parameters (`utm_*`, `fbclid`, `gclid`, `msclkid`, `mc_eid`,
+  `igshid`, `igsh`) before dedupe, so campaign variants of the same page are one resource. Applies
+  at write time only — existing rows keep their stored `normalized_url`. Added
+  `src/lib/utils.test.ts` (6 cases).
 - Unified resource dedupe. `POST /api/capture` deduped `normalized_url` globally while
   `POST /api/resources` deduped it per project, so saving the same URL into a second project was
   refused. Both now use `findDuplicateResource()` (`src/lib/resources.ts`) with one rule: a URL may
