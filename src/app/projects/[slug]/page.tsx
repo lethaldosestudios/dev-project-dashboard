@@ -90,11 +90,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     : null;
   const isStale = daysSinceActivity !== null && daysSinceActivity > 14;
 
-  const statusColor = {
-    active: "text-accent-emerald",
-    paused: "text-accent-orange",
-    archived: "text-white/40",
-  }[project.status] || "text-white/60";
+  const statusStyles: Record<string, { text: string; bg: string }> = {
+    active: { text: "text-accent-emerald", bg: "bg-accent-emerald/20" },
+    paused: { text: "text-accent-orange", bg: "bg-accent-orange/20" },
+    archived: { text: "text-white/40", bg: "bg-white/10" },
+  };
+  const statusStyle = statusStyles[project.status] ?? { text: "text-white/60", bg: "bg-white/10" };
 
   const priorityColor = {
     high: "text-accent-red",
@@ -109,7 +110,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-3xl font-bold text-white">{project.name}</h1>
-            <span className={`text-sm ${statusColor} bg-${statusColor.replace("text-", "").replace("/", "_")}/20 px-2 py-1 rounded-full`}>
+            <span className={`text-sm ${statusStyle.text} ${statusStyle.bg} px-2 py-1 rounded-full`}>
               {project.status}
             </span>
             <span className={`text-sm ${priorityColor}`}>
