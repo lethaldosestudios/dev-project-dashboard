@@ -1,3 +1,8 @@
+// Force the test environment regardless of the caller's shell. Jest otherwise honours an
+// explicitly set NODE_ENV, and NODE_ENV=production makes React resolve to its production build,
+// which fails every suite with "act(...) is not supported in production builds of React".
+process.env.NODE_ENV = 'test';
+
 module.exports = {
   testEnvironment: 'jsdom',
   testMatch: ['**/__tests__/**/*.test.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],

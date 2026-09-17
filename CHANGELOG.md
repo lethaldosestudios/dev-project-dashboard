@@ -14,6 +14,9 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- Pinned `NODE_ENV=test` in `jest.config.cjs`. Jest honours an explicitly set `NODE_ENV`, so a
+  shell exporting `NODE_ENV=production` made React resolve to its production build and failed every
+  suite with "act(...) is not supported in production builds of React".
 - Fixed the project-detail status pill: replaced runtime-built Tailwind class strings
   (`bg-${...}/20`) with an explicit status → class mapping so Tailwind can generate the
   styles. Recovered from the `lethaldosestudios-review-recent-changes` branch.
