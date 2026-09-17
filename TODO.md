@@ -50,12 +50,6 @@ confirmed against the code on the date this file was last verified (see the stam
 - **Fix:** Delete them, or wire them up where intended. (`project-header.tsx` overlaps heavily with
   the inline header in `src/app/projects/[slug]/page.tsx`.)
 
-### 14. Duplicate `GitHubActivity` type with two different shapes
-- **Logged:** 2026-09-16
-- **Details:** `src/types/index.ts` and `src/lib/github.ts` both export a `GitHubActivity`, and the
-  two disagree (the type module requires `created_at`; the client module omits it).
-- **Fix:** Keep one definition and import it.
-
 ---
 
 ## Deferred

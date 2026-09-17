@@ -14,6 +14,9 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- Collapsed the duplicate `GitHubActivity` type. `src/types/index.ts` and `src/lib/github.ts` both
+  exported one, with different shapes. `src/lib/github.ts` now imports the canonical type and
+  exports `GitHubActivityDraft = Omit<GitHubActivity, "created_at">` for pre-insert activity.
 - `GET /api/resources` is paginated. It applied a silent `LIMIT 100`, so a caller could not tell
   whether there were exactly 100 resources or more. It now accepts `limit` (1–500, default 100) and
   `offset`, and returns `total`, `limit`, and `offset` alongside `resources`.

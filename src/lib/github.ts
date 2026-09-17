@@ -1,5 +1,6 @@
 // src/lib/github.ts
 // GitHub API client for fetching repository activity
+import type { GitHubActivity } from "@/types";
 
 const GITHUB_API_BASE = "https://api.github.com";
 
@@ -68,17 +69,11 @@ interface GitHubPullRequest {
   updated_at: string;
 }
 
-export interface GitHubActivity {
-  id: string;
-  project_id: string;
-  event_type: string;
-  external_id: string;
-  commit_sha?: string;
-  title?: string;
-  author?: string;
-  url?: string;
-  occurred_at: string;
-}
+/**
+ * Activity extracted from the GitHub API, before it is persisted. `created_at` is omitted because
+ * the database supplies it on insert; the stored shape is `GitHubActivity` in `src/types`.
+ */
+export type GitHubActivityDraft = Omit<GitHubActivity, "created_at">;
 
 function getHeaders(token: string): HeadersInit {
   return {
@@ -204,9 +199,9 @@ export async function fetchRepoPullRequests(
 /**
  * Extract activity events from GitHub events
  */
-export function extractActivityFromEvents(events: GitHubEvent[]): GitHubActivity[] {
+export function extractActivityFromEvents(events: GitHubEvent[]): GitHubActivityDraft[] {
   return events.map((event) => {
-    const activity: GitHubActivity = {
+    const activity: GitHubActivityDraft = {
       id: event.id,
       project_id: "", // Will be set when linked to project
       event_type: event.type,
