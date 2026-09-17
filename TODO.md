@@ -31,13 +31,6 @@ confirmed against the code on the date this file was last verified (see the stam
   there is no route or UI to create a link. The "Links" section can never populate through the app.
 - **Fix:** Add `POST`/`PATCH`/`DELETE` for project links plus UI in the project dialog.
 
-### 10. Capture dedupe scope differs from resource dedupe scope
-- **Logged:** 2026-09-16
-- **Details:** `POST /api/capture` dedupes `normalized_url` **globally**, while
-  `POST /api/resources` dedupes it **per project**. Saving the same URL through the bookmarklet
-  into a second project therefore reports "already captured" and attaches nothing.
-- **Fix:** Pick one scope and apply it to both paths.
-
 ### 11. GitHub sync is unpaginated, N+1, and misreports `skipped`
 - **Logged:** 2026-09-16
 - **Details:** `POST /api/sync/github` calls `fetchUserRepos` with `per_page=100` and no pagination,

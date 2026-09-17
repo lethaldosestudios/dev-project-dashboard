@@ -54,8 +54,8 @@ What is actually implemented today.
 - **Project detail** (`/projects/[slug]`) — status/priority badges, repo metadata, a stats bar,
   project links, GitHub activity feed, resources, and notes.
 - **Resources** — add, edit, and delete links with an optional title and note. URLs are normalized
-  (fragment and trailing slash stripped) and **deduplicated per project**; the domain and
-  `saved_via` source are recorded.
+  (fragment and trailing slash stripped) and deduplicated on one rule: **a URL may exist once per
+  project, and once unassigned**. The domain and `saved_via` source are recorded.
 - **Notes** — create plain-text notes with an optional title. Stored in `notes.content_md` and
   rendered as preformatted text. **Not markdown-rendered, and not editable or deletable** (see
   limitations).
@@ -257,8 +257,6 @@ The token is read from the `x-github-token` request header if present, falling b
   a numeric suffix (`my-project`, `my-project-2`, …).
 - **GitHub sync is unpaginated.** It reads the first 100 repos and issues one events request per
   linked repo plus a per-event existence check. The reported `skipped` count is always `0`.
-- **Capture dedupe is global, resource dedupe is per project.** The same URL saved through the
-  bookmarklet into a second project is reported as an existing capture.
 
 Each of these is recorded in [`TODO.md`](./TODO.md).
 

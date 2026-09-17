@@ -14,6 +14,10 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- Unified resource dedupe. `POST /api/capture` deduped `normalized_url` globally while
+  `POST /api/resources` deduped it per project, so saving the same URL into a second project was
+  refused. Both now use `findDuplicateResource()` (`src/lib/resources.ts`) with one rule: a URL may
+  exist once per project, and once unassigned.
 - Wired the `/projects` filter. The header input had no value or change handler, so typing did
   nothing; filtering now happens client-side over name, description, stack, and linked repo, via the
   new `src/components/project-filter.tsx`.

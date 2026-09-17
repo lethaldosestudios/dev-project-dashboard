@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";
 import { normalizeUrl, extractDomain } from "@/lib/utils";
 import { requireAuth } from "@/lib/auth";
+import { findDuplicateResource } from "@/lib/resources";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -60,10 +61,7 @@ export async function POST(req: Request) {
 
   const normalizedUrl = normalizeUrl(url);
 
-  const existing = await db
-    .prepare("SELECT id FROM resources WHERE normalized_url = ? AND (project_id = ? OR ? IS NULL)")
-    .bind(normalizedUrl, projectId ?? null, projectId ?? null)
-    .first();
+  const existing = await findDuplicateResource(db, normalizedUrl, projectId);
 
   if (existing) {
     return NextResponse.json({ ok: true, duplicate: true, id: existing.id }, { status: 200 });
