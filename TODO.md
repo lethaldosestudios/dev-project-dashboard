@@ -19,15 +19,6 @@ confirmed against the code on the date this file was last verified (see the stam
 - **Fix:** Add `src/app/api/notes/[id]/route.ts` with `PATCH`/`DELETE` (auth-guarded, following the
   `resources/[id]` pattern), plus edit/delete controls in the notes editor.
 
-### 3. Renaming a project does not update its slug
-- **Logged:** 2026-09-16
-- **Details:** `PATCH /api/projects/[id]` updates `name` but never `slug`, so every existing link
-  and bookmark to that project goes stale. Separately, `slug` is `UNIQUE` and `POST /api/projects`
-  has no error handling around the insert, so creating two projects with the same name throws an
-  unhandled error and returns a 500 instead of a friendly message.
-- **Fix:** Re-derive and persist `slug` on rename, and either catch the uniqueness violation to
-  return 400 or disambiguate with a numeric suffix.
-
 ### 4. Adding a note does not refresh the list
 - **Logged:** 2026-09-16
 - **Details:** `src/components/notes-editor.tsx` posts the new note but never re-renders — the

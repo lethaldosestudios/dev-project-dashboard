@@ -126,6 +126,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: "last_activity_at must be a string" }, { status: 400 });
   }
 
+  // `slug` is deliberately absent from this UPDATE. It is a stable permalink assigned at
+  // creation; rewriting it on rename would break every existing link. See src/lib/projects.ts.
   await db
     .prepare(
       `UPDATE projects

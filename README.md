@@ -252,10 +252,9 @@ The token is read from the `x-github-token` request header if present, falling b
 
 - **Notes are create-only.** There is no `notes/[id]` route and no edit/delete UI. Notes are
   removed only indirectly, by cascade, when their project is deleted.
-- **Renaming a project does not update its slug.** Slug is a stable permalink: it is set once at
-  creation, so renaming a project leaves its URL working.
-- **Two projects with the same name return a 500.** `slug` is `UNIQUE`, and the create path does
-  not yet handle the collision.
+- **Renaming a project does not update its slug (by design).** Slug is a stable permalink set once
+  at creation, so renaming a project leaves its URL working. A new project whose name collides gets
+  a numeric suffix (`my-project`, `my-project-2`, …).
 - **Adding a note does not refresh the list.** [`src/components/notes-editor.tsx`](./src/components/notes-editor.tsx)
   never re-fetches, so a new note stays invisible until the page is reloaded.
 - **GitHub sync is unpaginated.** It reads the first 100 repos and issues one events request per

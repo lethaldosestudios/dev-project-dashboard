@@ -67,7 +67,7 @@ These make claims about the **current** state and must stay true:
 - **Database is Cloudflare D1** (SQLite), accessed with raw `prepare()`/`bind()` — there is no ORM.
   There is no service layer either: pages and route handlers both issue SQL directly against the
   helper in `src/lib/db.ts`.
-- **A minimal Jest suite exists** (ts-jest + @testing-library/react, 3 suites). Do not
+- **A minimal Jest suite exists** (ts-jest + @testing-library/react). Do not
   treat test coverage as a blocking condition, but reason through edge cases explicitly.
 - **Auth is Cloudflare Access.** There is no application password or session cookie — if you find
   documentation claiming one exists, that documentation is stale. `requireAuth()` accepts only the
@@ -93,6 +93,10 @@ These make claims about the **current** state and must stay true:
 - **Schema changes:** Any edit to `db/schema.sql` must have a matching, numbered file in
   `db/migrations/`, and the two must not diverge. `scripts/docs-check.mjs` verifies every migrated
   column appears in the schema.
+- **Project slugs are permalinks:** `projects.slug` is assigned once at creation and must never be
+  rewritten on rename, or every existing link breaks. `uniqueProjectSlug()` in
+  `src/lib/projects.ts` resolves collisions at create time; do not add `slug` back to the PATCH
+  update in `src/app/api/projects/[id]/route.ts`.
 - **Edge runtime on API routes:** `export const runtime = 'edge'` is not supported by OpenNext
   Cloudflare for `app/api/` routes. Flag any new route that adds it.
 - **Auth on mutation routes:** Every `POST`/`PATCH`/`DELETE` API handler must call `requireAuth()`

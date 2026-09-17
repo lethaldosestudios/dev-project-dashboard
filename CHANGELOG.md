@@ -14,6 +14,11 @@ Entries are newest-first, one line per meaningful change, dated by commit.
 ---
 
 ## 2026-09-16
+- `POST /api/projects` no longer fails when two projects share a name. `projects.slug` is UNIQUE and
+  the insert was unhandled, so the second create threw a 500. `uniqueProjectSlug()`
+  (`src/lib/projects.ts`) now assigns the first free slug (`foo`, `foo-2`, …). Slug is confirmed as
+  a stable permalink: `PATCH` still does not rewrite it on rename. Added
+  `src/lib/projects.test.ts` (5 cases).
 - Fixed `/search` result links. Note and resource results linked to `/projects/<project_id>` — a
   UUID — while the project detail route resolves by slug, so they landed on "Project not found".
   `/api/search` now joins the owning project and returns `project_slug`.

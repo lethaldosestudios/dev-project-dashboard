@@ -1,7 +1,8 @@
 // src/app/api/projects/route.ts
 import { NextResponse } from "next/server";
 import { getDb, newId, nowIso } from "@/lib/db";
-import { slugify, normalizeGithubRepo } from "@/lib/utils";
+import { normalizeGithubRepo } from "@/lib/utils";
+import { uniqueProjectSlug } from "@/lib/projects";
 import { requireAuth } from "@/lib/auth";
 
 const priorities = new Set(["low", "normal", "high"]);
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
 
   const db = await getDb();
   const id = newId();
-  const slug = slugify(name);
+  const slug = await uniqueProjectSlug(db, name);
   const now = nowIso();
 
   await db
