@@ -181,12 +181,7 @@ const ROOT_FILES = new Set([
  * issue). Declared here so a real missing-file reference can never hide among them;
  * if one is later created, the staleness check below fails until it is removed.
  */
-const PLANNED_PATHS = new Map([
-  [
-    "src/app/api/notes/[id]/route.ts",
-    "Proposed in TODO.md — the notes edit/delete gap",
-  ],
-]);
+const PLANNED_PATHS = new Map([]);
 
 function checkReferencedFiles() {
   const docs = [...STATE_DOCS, ...HISTORY_DOCS, ...githubDocs()];

@@ -1,4 +1,4 @@
-<!-- verified-against: 6ad0de10231f3a26e2dc0eeb10525cb527bd9b95 | verified: 2026-09-16 -->
+<!-- verified-against: fcd4e5a | verified: 2026-09-18 -->
 # Dev Project Dashboard
 
 > A self-hosted project command center. One screen that answers the only question that matters: **what needs my attention right now?**
@@ -34,7 +34,7 @@ mean three different things at once. Everything after Phase 3 is identified by n
 | Phase 3 | Quick capture (bookmarklet) | ✅ Closed |
 | — | **GitHub Sync** — repo linking, `repo_metadata`, real activity | ✅ Delivered 2026-09-13 |
 | — | **Hardening** — correctness & security fixes | ✅ Delivered 2026-09-16 |
-| — | **Feature parity** — missing write paths (notes edit/delete, tags, project links) | 🔄 Next |
+| — | **Feature parity** — notes edit/delete, tagging, project links | ✅ Delivered 2026-09-18 |
 | — | **Polish** — visual & functional refinement | ⏳ Queued |
 | — | **AI Features** — product-facing AI | ⏳ Deferred, not committed |
 
@@ -58,10 +58,17 @@ What is actually implemented today.
   (fragment, trailing slash, and tracking parameters such as `utm_*` / `fbclid` stripped) and
   deduplicated on one rule: **a URL may exist once per project, and once unassigned**. The domain
   and `saved_via` source are recorded.
-- **Notes** — create plain-text notes with an optional title. Stored in `notes.content_md` and
-  rendered as preformatted text. **Not markdown-rendered, and not editable or deletable** (see
-  limitations).
-- **Search** (`/search`) — a debounced (300 ms) query across projects, notes, and resources. Note
+- **Notes** — create, edit, and delete plain-text notes with an optional title. Stored in
+  `notes.content_md` and rendered as preformatted text. Not markdown-rendered (see limitations).
+  Edit and delete controls are in the notes editor on each project's detail page, hitting
+  `/api/notes/[id]` (`PATCH`/`DELETE`).
+- **Tags** — create, rename, and delete tags (`tags` table), and assign or unassign them to
+  resources through the `resource_tags` junction table. The tag selector lives in the resource
+  edit dialog; existing tags render as chips on each resource in the list.
+- **Project links** — each project can hold multiple named links (type, label, URL). The links
+  section on the project detail page supports add, edit, and delete via `/api/project-links` and
+  `/api/project-links/[id]`.
+- **Search** `/search` — a debounced (300 ms) query across projects, notes, and resources. Note
   and resource results link through to the owning project.
 - **Quick capture** (`/capture`) — a form prefilled from query params for saving a link in seconds.
   A **bookmarklet** generated from your current origin is installable from `/settings`.
@@ -70,18 +77,6 @@ What is actually implemented today.
   display string in `repo_metadata` (e.g. `⭐ 42 · 🐛 3 · TypeScript`). Each run is recorded in
   `sync_runs` and reports how many events were added versus already known.
 - **Design language** — OLED-black base with a glass/glow system. See [`DESIGN.md`](./DESIGN.md).
-
-### Scheduled — Feature parity
-
-These are committed work in the **Feature parity** workstream, which runs before Polish. None has a
-write path today:
-
-- **Notes edit/delete.** Notes can be created but not edited or deleted individually — there is no
-  `notes/[id]` route and no UI for it.
-- **Tagging.** `tags` and `resource_tags` are in [`db/schema.sql`](./db/schema.sql), but nothing
-  ever inserts into them.
-- **Project links.** `project_links` is read and cascade-deleted, but there is no route or UI to
-  create a link, so the "Links" section only ever renders rows inserted by hand.
 
 ---
 
@@ -121,6 +116,13 @@ dev-project-dashboard/
 │   │       ├── resources/route.ts           # GET, POST
 │   │       ├── resources/[id]/route.ts      # PATCH, DELETE
 │   │       ├── notes/route.ts               # GET, POST
+│   │       ├── notes/[id]/route.ts          # PATCH, DELETE
+│   │       ├── tags/route.ts                # GET, POST
+│   │       ├── tags/[id]/route.ts           # PATCH, DELETE
+│   │       ├── resources/[id]/tags/route.ts # GET, POST
+│   │       ├── resources/[id]/tags/[tagId]/route.ts # DELETE
+│   │       ├── project-links/route.ts       # POST
+│   │       ├── project-links/[id]/route.ts  # PATCH, DELETE
 │   │       ├── search/route.ts              # GET
 │   │       ├── capture/route.ts             # POST
 │   │       └── sync/
@@ -135,6 +137,9 @@ dev-project-dashboard/
 │   │   ├── resource-dialog.tsx
 │   │   ├── resource-actions.tsx
 │   │   ├── notes-editor.tsx
+│   │   ├── tag-selector.tsx
+│   │   ├── project-link-dialog.tsx
+│   │   ├── project-link-actions.tsx
 │   │   ├── attention-panel.tsx
 │   │   ├── github-sync-status.tsx
 │   │   ├── github-activity-feed.tsx
@@ -144,6 +149,9 @@ dev-project-dashboard/
 │   │   ├── auth.ts                 # requireAuth()
 │   │   ├── github.ts               # GitHub REST client + transforms
 │   │   ├── utils.ts                # URL/slug/GitHub-ref normalization
+│   │   ├── projects.ts             # uniqueProjectSlug()
+│   │   ├── resources.ts            # findDuplicateResource()
+│   │   ├── tags.ts                 # uniqueTagSlug()
 │   │   └── cn.ts
 │   └── types/index.ts
 ├── db/
@@ -231,9 +239,12 @@ file is gitignored and never deployed, so a production Worker cannot inherit the
 
 Every mutation route calls `requireAuth()`:
 
+- `POST /api/notes`, `PATCH`/`DELETE /api/notes/[id]`
+- `POST /api/tags`, `PATCH`/`DELETE /api/tags/[id]`
+- `POST /api/resources/[id]/tags`, `DELETE /api/resources/[id]/tags/[tagId]`
+- `POST /api/project-links`, `PATCH`/`DELETE /api/project-links/[id]`
 - `POST /api/projects`, `PATCH`/`DELETE /api/projects/[id]`
 - `POST /api/resources`, `PATCH`/`DELETE /api/resources/[id]`
-- `POST /api/notes`
 - `POST /api/capture`
 - `POST`/`GET /api/sync/github`
 
@@ -256,8 +267,6 @@ The token is read from the `x-github-token` request header if present, falling b
 
 ## Known limitations
 
-- **Notes are create-only.** There is no `notes/[id]` route and no edit/delete UI. Notes are
-  removed only indirectly, by cascade, when their project is deleted.
 - **Renaming a project does not update its slug (by design).** Slug is a stable permalink set once
   at creation, so renaming a project leaves its URL working. A new project whose name collides gets
   a numeric suffix (`my-project`, `my-project-2`, …).

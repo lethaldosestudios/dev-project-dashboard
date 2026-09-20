@@ -37,6 +37,20 @@ export interface Note {
   updated_at: string;
 }
 
+export interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+  created_at: string;
+}
+
+export interface ResourceTag {
+  resource_id: string;
+  tag_id: string;
+  source: string;
+  confidence: number | null;
+}
+
 export interface ProjectLink {
   id: string;
   project_id: string;

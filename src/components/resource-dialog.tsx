@@ -6,6 +6,7 @@ import type { Resource } from "@/types";
 import { GlassCard } from "./ui/glass-card";
 import { GlowInput } from "./ui/glow-input";
 import { LiquidButton } from "./ui/liquid-button";
+import { TagSelector } from "./tag-selector";
 
 interface ResourceDialogProps {
   projectId: string;
@@ -101,6 +102,15 @@ export function ResourceDialog({ projectId, trigger, resource }: ResourceDialogP
               <label className="block text-sm text-white/70">Note <span className="text-white/30">(optional)</span>
                 <textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Why is this useful?" maxLength={2000} rows={3} className="mt-2 w-full rounded-xl border border-white/10 bg-glass-900/50 p-3 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-accent-cyan/50 focus:shadow-glow-cyan" />
               </label>
+              {isEditing && (
+                <div>
+                  <label className="block text-sm text-white/70">
+                    Tags
+                    <TagSelector resourceId={resource!.id} />
+                  </label>
+                </div>
+              )}
+
               {error && <p className="text-sm text-accent-red">{error}</p>}
               <div className="flex justify-end gap-3 pt-2">
                 <LiquidButton type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>Cancel</LiquidButton>

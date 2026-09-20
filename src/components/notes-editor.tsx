@@ -67,7 +67,7 @@ export function NotesEditor({ projectId, notes }: NotesEditorProps) {
           <div className="text-3xl mb-2">📝</div>
           <p className="text-white/60 text-sm">No notes yet</p>
         </div>
-        
+
         <div className="space-y-4">
           <GlowInput
             placeholder="Title (optional)"
@@ -125,9 +125,9 @@ export function NotesEditor({ projectId, notes }: NotesEditorProps) {
       {/* Notes List */}
       <div className="space-y-3">
         {notes.map((note) => (
-          <NoteItem 
-            key={note.id} 
-            note={note} 
+          <NoteItem
+            key={note.id}
+            note={note}
             isExpanded={expandedNotes.has(note.id)}
             onToggleExpand={() => toggleExpand(note.id)}
           />
@@ -138,39 +138,135 @@ export function NotesEditor({ projectId, notes }: NotesEditorProps) {
 }
 
 function NoteItem({ note, isExpanded, onToggleExpand }: { note: Note; isExpanded: boolean; onToggleExpand: () => void }) {
+  const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(note.title ?? "");
+  const [editContent, setEditContent] = useState(note.content_md);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState("");
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
 
+  const handleSave = async () => {
+    if (!editContent.trim()) return;
+    setIsSaving(true);
+    setError("");
+    try {
+      const response = await fetch(`/api/notes/${note.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: editTitle.trim() || null,
+          content_md: editContent,
+        }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) throw new Error(payload.error || "Could not save note.");
+      setIsEditing(false);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save note.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Delete this note? This cannot be undone.")) return;
+    setIsDeleting(true);
+    setError("");
+    try {
+      const response = await fetch(`/api/notes/${note.id}`, { method: "DELETE" });
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) throw new Error(payload.error || "Could not delete note.");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete note.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <GlassCard 
-      variant="elevated" 
-      className="p-4 cursor-pointer hover:border-white/20 transition-all"
-      onClick={onToggleExpand}
+    <GlassCard
+      variant="elevated"
+      className="p-4 hover:border-white/20 transition-all"
     >
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          {note.title && (
-            <h4 className="font-medium text-white mb-1">{note.title}</h4>
-          )}
-          <div className={`prose prose-invert text-sm max-w-none ${isExpanded ? "line-clamp-none" : "line-clamp-2"}`}>
-            <p className="whitespace-pre-wrap text-white/80">{note.content_md}</p>
+      {isEditing ? (
+        <div className="space-y-4">
+          <GlowInput
+            placeholder="Title (optional)"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            maxLength={500}
+            glowColor="cyan"
+          />
+          <textarea
+            className="w-full min-h-[120px] bg-glass-900/50 border border-white/10 rounded-xl p-4 text-sm placeholder:text-white/30 resize-none focus:outline-none focus:border-accent-primary/50 focus:shadow-glow-blue/50"
+            placeholder="Edit your note..."
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            maxLength={50000}
+          />
+          {error && <p className="text-sm text-accent-red">{error}</p>}
+          <div className="flex justify-end gap-3 pt-2">
+            <LiquidButton variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+              Cancel
+            </LiquidButton>
+            <LiquidButton variant="primary" size="sm" isLoading={isSaving} onClick={handleSave}>
+              Save
+            </LiquidButton>
           </div>
         </div>
-      </div>
-      <div className="flex justify-between items-center mt-3">
-        <p className="text-xs text-white/50">{formatDate(note.updated_at)}</p>
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleExpand();
-          }}
-          className="text-xs text-accent-primary/70 hover:text-accent-primary"
-        >
-          {isExpanded ? "Show less" : "Show more"}
-        </button>
-      </div>
+      ) : (
+        <>
+          <div
+            className="flex justify-between items-start"
+            onClick={onToggleExpand}
+            style={{ cursor: "pointer" }}
+          >
+            <div className="flex-1">
+              {note.title && (
+                <h4 className="font-medium text-white mb-1">{note.title}</h4>
+              )}
+              <div className={`prose prose-invert text-sm max-w-none ${isExpanded ? "line-clamp-none" : "line-clamp-2"}`}>
+                <p className="whitespace-pre-wrap text-white/80">{note.content_md}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center mt-3">
+            <p className="text-xs text-white/50">{formatDate(note.updated_at)}</p>
+            <div className="flex items-center gap-2">
+              <LiquidButton variant="ghost" size="sm" onClick={() => {
+                setEditTitle(note.title ?? "");
+                setEditContent(note.content_md);
+                setError("");
+                setIsEditing(true);
+              }}>
+                Edit
+              </LiquidButton>
+              <LiquidButton variant="ghost" size="sm" isLoading={isDeleting} onClick={handleDelete}>
+                Delete
+              </LiquidButton>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleExpand();
+                }}
+                className="text-xs text-accent-primary/70 hover:text-accent-primary"
+              >
+                {isExpanded ? "Show less" : "Show more"}
+              </button>
+            </div>
+          </div>
+          {error && <p className="text-xs text-accent-red mt-2">{error}</p>}
+        </>
+      )}
     </GlassCard>
   );
 }

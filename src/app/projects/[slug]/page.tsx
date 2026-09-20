@@ -7,10 +7,12 @@ import { GitHubActivityFeed } from "@/components/github-activity-feed";
 import { ResourceList } from "@/components/resource-list";
 import { NotesEditor } from "@/components/notes-editor";
 import Link from "next/link";
-import type { Project, Resource, Note, GitHubActivity, ProjectLink } from "@/types";
+import type { Project, Resource, Note, GitHubActivity, ProjectLink, Tag } from "@/types";
 import { ProjectDialog } from "@/components/project-dialog";
 import { ResourceDialog } from "@/components/resource-dialog";
 import { ProjectActions } from "@/components/project-actions";
+import { ProjectLinkDialog } from "@/components/project-link-dialog";
+import { ProjectLinkWithActions } from "@/components/project-link-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +47,29 @@ async function getProjectData(slug: string) {
     .bind(project.id)
     .all();
 
+  // Get resource tags (joined)
+  const { results: resourceTags } = await db
+    .prepare(
+      `SELECT rt.resource_id, t.id, t.name, t.slug, t.created_at
+       FROM resource_tags rt
+       JOIN tags t ON t.id = rt.tag_id
+       WHERE rt.resource_id IN (SELECT id FROM resources WHERE project_id = ?)
+       ORDER BY t.name`,
+    )
+    .bind(project.id)
+    .all<{ resource_id: string; id: string; name: string; slug: string; created_at: string }>();
+
+  const tagsByResourceId: Record<string, Tag[]> = {};
+  for (const row of resourceTags) {
+    const tag: Tag = {
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      created_at: row.created_at,
+    };
+    (tagsByResourceId[row.resource_id] ??= []).push(tag);
+  }
+
   // Get GitHub activity
   const { results: githubActivity } = await db
     .prepare("SELECT * FROM github_activity WHERE project_id = ? ORDER BY occurred_at DESC LIMIT 50")
@@ -56,6 +81,7 @@ async function getProjectData(slug: string) {
     links: links as unknown as ProjectLink[],
     notes: notes as unknown as Note[],
     resources: resources as unknown as Resource[],
+    tagsByResourceId: tagsByResourceId as Record<string, Tag[]>,
     githubActivity: githubActivity as unknown as GitHubActivity[],
   };
 }
@@ -81,7 +107,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     );
   }
 
-  const { project, links, notes, resources, githubActivity } = data;
+  const { project, links, notes, resources, tagsByResourceId, githubActivity } = data;
 
   // Calculate days since last activity
   const lastActivityDate = project.last_activity_at ? new Date(project.last_activity_at) : null;
@@ -165,24 +191,29 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       </GlassCard>
 
       {/* Links */}
-      {links.length > 0 && (
-        <section>
-          <h2 className="text-lg font-medium text-white mb-4">Links</h2>
+      <section>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-medium text-white">Links</h2>
+          <ProjectLinkDialog
+            projectId={project.id}
+            trigger={
+              <LiquidButton variant="secondary" size="sm">
+                <PlusIcon className="w-4 h-4" />
+                Add Link
+              </LiquidButton>
+            }
+          />
+        </div>
+        {links.length > 0 ? (
           <div className="flex gap-3 flex-wrap">
             {links.map((link) => (
-              <Link
-                key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="liquid-glass px-4 py-2 rounded-xl text-sm hover:scale-105 transition-transform"
-              >
-                {link.label || link.url}
-              </Link>
+              <ProjectLinkWithActions key={link.id} link={link} projectId={project.id} />
             ))}
           </div>
-        </section>
-      )}
+        ) : (
+          <p className="text-sm text-white/50">No links added yet.</p>
+        )}
+      </section>
 
       {/* GitHub Activity */}
       {githubActivity.length > 0 && (
@@ -206,7 +237,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             }
           />
         </div>
-        <ResourceList resources={resources} projectId={project.id} />
+        <ResourceList resources={resources} projectId={project.id} tagsByResourceId={tagsByResourceId} />
       </section>
 
       {/* Notes */}
