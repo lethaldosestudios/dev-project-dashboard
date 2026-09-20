@@ -1,4 +1,4 @@
-<!-- verified-against: fcd4e5a | verified: 2026-09-18 -->
+<!-- verified-against: a1bb04f | verified: 2026-09-20 -->
 # Changelog
 
 **This file is a historical record only.** It describes what changed and when. It is
@@ -10,6 +10,17 @@ documents that contradicted the code and each other. Git history remains the aut
 archive; this file is the readable summary.
 
 Entries are newest-first, one line per meaningful change, dated by commit.
+
+---
+
+## 2026-09-20
+- Follow-up fixes to the Feature parity workstream.
+- Tag rename now uses `uniqueTagSlug()` (auto-suffix on collision) instead of a
+  hard 409 rejection, making rename consistent with tag creation. Added an
+  `excludeId` parameter to `uniqueTagSlug()` so the tag being renamed is not
+  counted as a self-collision. Two new test cases cover the exclusion.
+- Project-link `PATCH` response now returns the specific updated fields
+  `{ type, label, url, sort_order }` instead of echoing the raw request body.
 
 ---
 
