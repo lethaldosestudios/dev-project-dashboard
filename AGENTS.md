@@ -1,4 +1,4 @@
-<!-- verified-against: 6ad0de10231f3a26e2dc0eeb10525cb527bd9b95 | verified: 2026-09-16 -->
+<!-- verified-against: fcd4e5a | verified: 2026-09-18 -->
 # AGENTS.md
 
 How AI agents should work in this repository. Read this before reviewing a PR or writing code.

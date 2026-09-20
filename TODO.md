@@ -1,4 +1,4 @@
-<!-- verified-against: 6ad0de10231f3a26e2dc0eeb10525cb527bd9b95 | verified: 2026-09-16 -->
+<!-- verified-against: fcd4e5a | verified: 2026-09-18 -->
 # TODO — Open Issues & Deferred Work
 
 This file is **forward-looking only**. It lists what is open, broken, or deferred. It contains no
@@ -11,33 +11,9 @@ confirmed against the code on the date this file was last verified (see the stam
 
 ## Open
 
-Items 1, 7, and 8 are **Feature parity** work — features with no write path, scheduled ahead of
-Polish rather than ad-hoc deferred. **Hardening** is complete: every defect it covered is fixed and
-recorded in [`CHANGELOG.md`](./CHANGELOG.md).
-
-| Workstream | Items |
-|---|---|
-| **Feature parity** (next) | 1, 7, 8 |
-
-### 1. Notes are create-only — no edit or delete (feature gap)
-- **Logged:** 2026-09-11
-- **Details:** `POST /api/notes` creates a note, but there is no `src/app/api/notes/[id]/route.ts`
-  and no edit/delete UI in `src/components/notes-editor.tsx`. Notes are only removed indirectly, by
-  cascade, when their project is deleted. Projects and resources both have full CRUD; notes do not.
-- **Fix:** Add `src/app/api/notes/[id]/route.ts` with `PATCH`/`DELETE` (auth-guarded, following the
-  `resources/[id]` pattern), plus edit/delete controls in the notes editor.
-
-### 7. Tagging has no write path
-- **Logged:** 2026-09-16
-- **Details:** `tags` and `resource_tags` exist in `db/schema.sql`, but no route or component ever
-  inserts into either table. They appear only in cascade `DELETE`s.
-- **Fix:** Add tag CRUD and a resource↔tag association endpoint, or drop the tables.
-
-### 8. Project links have no write path
-- **Logged:** 2026-09-16
-- **Details:** `project_links` is read by the detail page and cascade-deleted with its project, but
-  there is no route or UI to create a link. The "Links" section can never populate through the app.
-- **Fix:** Add `POST`/`PATCH`/`DELETE` for project links plus UI in the project dialog.
+No open items. The **Feature parity** workstream is complete — notes edit/delete, tags,
+and project links all have write paths and UI as of 2026-09-18. See
+[`CHANGELOG.md`](./CHANGELOG.md) for the delivery entries.
 
 ---
 

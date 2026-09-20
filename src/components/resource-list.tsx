@@ -2,15 +2,16 @@
 import Link from "next/link";
 import { GlassCard } from "./ui/glass-card";
 import { LiquidButton } from "./ui/liquid-button";
-import type { Resource } from "@/types";
+import type { Resource, Tag } from "@/types";
 import { ResourceActions } from "./resource-actions";
 
 interface ResourceListProps {
   resources: Resource[];
   projectId?: string;
+  tagsByResourceId?: Record<string, Tag[]>;
 }
 
-export function ResourceList({ resources, projectId }: ResourceListProps) {
+export function ResourceList({ resources, projectId, tagsByResourceId }: ResourceListProps) {
   if (resources.length === 0) {
     return (
       <GlassCard variant="bordered" className="text-center py-12">
@@ -24,13 +25,18 @@ export function ResourceList({ resources, projectId }: ResourceListProps) {
   return (
     <div className="space-y-3">
       {resources.map((resource) => (
-        <ResourceItem key={resource.id} resource={resource} projectId={projectId ?? resource.project_id ?? ""} />
+        <ResourceItem
+          key={resource.id}
+          resource={resource}
+          projectId={projectId ?? resource.project_id ?? ""}
+          tags={tagsByResourceId?.[resource.id]}
+        />
       ))}
     </div>
   );
 }
 
-function ResourceItem({ resource, projectId }: { resource: Resource; projectId: string }) {
+function ResourceItem({ resource, projectId, tags }: { resource: Resource; projectId: string; tags?: Tag[] }) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString();
@@ -79,6 +85,18 @@ function ResourceItem({ resource, projectId }: { resource: Resource; projectId: 
           )}
           {resource.summary && (
             <p className="text-sm text-white/50 mt-1 line-clamp-2">{resource.summary}</p>
+          )}
+          {tags && tags.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  className="text-xs bg-accent-primary/20 text-accent-primary px-2 py-1 rounded-full"
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
           )}
           <div className="mt-3 flex gap-2">
             <span className="text-xs bg-white/10 text-white/70 px-2 py-1 rounded-full">

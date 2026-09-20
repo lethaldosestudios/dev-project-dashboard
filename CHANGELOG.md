@@ -1,4 +1,4 @@
-<!-- verified-against: 6ad0de10231f3a26e2dc0eeb10525cb527bd9b95 | verified: 2026-09-16 -->
+<!-- verified-against: fcd4e5a | verified: 2026-09-18 -->
 # Changelog
 
 **This file is a historical record only.** It describes what changed and when. It is
@@ -12,6 +12,30 @@ archive; this file is the readable summary.
 Entries are newest-first, one line per meaningful change, dated by commit.
 
 ---
+
+## 2026-09-18
+- Delivered the **Feature parity** workstream. Notes edit/delete, tagging, and project links
+  all gained write paths and UI, closing every open item in `TODO.md`.
+- Added `src/app/api/notes/[id]/route.ts` with `PATCH` and `DELETE` (auth-guarded, following the
+  `resources/[id]` pattern). `src/components/notes-editor.tsx` `NoteItem` now has Edit (inline form)
+  and Delete (confirm + call) controls. Notes are no longer create-only.
+- Added tagging. `tags` and `resource_tags` tables existed but were never written to. New
+  `src/app/api/tags/route.ts` (GET list/search, POST create) and `src/app/api/tags/[id]/route.ts`
+  (PATCH rename, DELETE with cascade clean-up). New `src/app/api/resources/[id]/tags/route.ts`
+  (GET list for a resource, POST assign) and `src/app/api/resources/[id]/tags/[tagId]/route.ts`
+  (DELETE unassign). Added `src/lib/tags.ts` (`uniqueTagSlug()`) with `src/lib/tags.test.ts` (5 cases).
+  New `src/components/tag-selector.tsx` integrated into `src/components/resource-dialog.tsx`
+  for assigning tags when editing a resource; tag chips render on each resource in
+  `src/components/resource-list.tsx`. Resource tags are fetched in one JOIN query in the project
+  detail page.
+- Added project-link write paths. New `src/app/api/project-links/route.ts` (POST) and
+  `src/app/api/project-links/[id]/route.ts` (PATCH, DELETE). New `src/components/project-link-dialog.tsx`
+  for add/edit via modal and `src/components/project-link-actions.tsx` for inline edit/delete on
+  each link chip. The Links section on the project detail page is now always visible with an
+  "Add Link" button.
+- Removed `src/app/api/notes/[id]/route.ts` from the `PLANNED_PATHS` allowlist in
+  `scripts/docs-check.mjs` — the file now exists, so the planned-path staleness check would
+  fail otherwise.
 
 ## 2026-09-16
 - `docs:check` gained an eighth check: a state doc fails if it is older than the newest commit
