@@ -13,3 +13,7 @@ dist/
 
 # Local agent tooling (skills, taste, settings) — machine-local, not project source.
 .commandcode/
+.cursor/
+.superdesign/
+.windsurfrules
+CLAUDE.md
