@@ -6,13 +6,18 @@ import { slugify } from "./utils";
  * A new tag named "Work" gets slug "work"; if that already exists, the next gets
  * "work-2", then "work-3", and so on.
  */
-export async function uniqueTagSlug(db: D1Database, name: string): Promise<string> {
+export async function uniqueTagSlug(db: D1Database, name: string, excludeId?: string): Promise<string> {
   const base = slugify(name) || "tag";
 
-  const { results } = await db
-    .prepare("SELECT slug FROM tags WHERE slug = ? OR slug LIKE ?")
-    .bind(base, `${base}-%`)
-    .all<{ slug: string }>();
+  const { results } = excludeId
+    ? await db
+        .prepare("SELECT slug FROM tags WHERE (slug = ? OR slug LIKE ?) AND id != ?")
+        .bind(base, `${base}-%`, excludeId)
+        .all<{ slug: string }>()
+    : await db
+        .prepare("SELECT slug FROM tags WHERE slug = ? OR slug LIKE ?")
+        .bind(base, `${base}-%`)
+        .all<{ slug: string }>();
 
   const taken = new Set(results.map((row) => row.slug));
   if (!taken.has(base)) {
