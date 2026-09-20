@@ -92,7 +92,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     .bind(type, label, url, sort_order, id)
     .run();
 
-  return NextResponse.json({ ok: true, id, updates: body });
+  return NextResponse.json({ ok: true, id, updates: { type, label, url, sort_order } });
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {

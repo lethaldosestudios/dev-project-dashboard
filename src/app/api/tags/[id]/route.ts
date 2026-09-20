@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { getDb, nowIso } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
-import { slugify } from "@/lib/utils";
+import { uniqueTagSlug } from "@/lib/tags";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAuth(req);
@@ -37,16 +37,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: "name must be 200 characters or fewer" }, { status: 400 });
   }
 
-  const slug = slugify(name) || "tag";
-
-  // Reject if the slug belongs to another tag.
-  const collision = await db
-    .prepare("SELECT id FROM tags WHERE slug = ? AND id != ?")
-    .bind(slug, id)
-    .first<{ id: string }>();
-  if (collision) {
-    return NextResponse.json({ error: "A tag with this name already exists" }, { status: 409 });
-  }
+  const slug = await uniqueTagSlug(db, name, id);
 
   await db
     .prepare("UPDATE tags SET name = ?, slug = ? WHERE id = ?")

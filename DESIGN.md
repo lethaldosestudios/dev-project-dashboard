@@ -1,4 +1,4 @@
-<!-- verified-against: fcd4e5a | verified: 2026-09-18 -->
+<!-- verified-against: a1bb04f | verified: 2026-09-20 -->
 # Design System — Dev Project Dashboard
 
 This documents the design system as it actually exists in the codebase today, reverse-engineered from `tailwind.config.ts`, `src/app/globals.css`, and every component under `src/`. Where the code disagrees with itself, §9 says so explicitly rather than papering over it.
