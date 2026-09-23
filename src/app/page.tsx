@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { ProjectCard } from "@/components/project-card";
 import { AttentionPanel } from "@/components/attention-panel";
 import { GitHubSyncStatus } from "@/components/github-sync-status";
+import { CloudflareDeployStatus } from "@/components/cloudflare-deploy-status";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Header } from "@/components/ui/header";
 import { LiquidButton } from "@/components/ui/liquid-button";
@@ -41,11 +42,20 @@ async function getHomeData() {
     activityCounts[a.project_id] = a.count;
   }
 
-  // Get last sync time
+  // Get last GitHub sync time
   const { results: lastSync } = await db
     .prepare(
       `SELECT started_at, status, records_processed FROM sync_runs 
        WHERE sync_type = 'github' 
+       ORDER BY started_at DESC LIMIT 1`
+    )
+    .all();
+
+  // Get last Cloudflare deploy sync time
+  const { results: lastDeploySync } = await db
+    .prepare(
+      `SELECT started_at, status, records_processed FROM sync_runs 
+       WHERE sync_type = 'deploys' 
        ORDER BY started_at DESC LIMIT 1`
     )
     .all();
@@ -55,11 +65,13 @@ async function getHomeData() {
     stale: stale as unknown as Project[],
     activityCounts,
     lastSync: lastSync.length > 0 ? (lastSync[0] as any) : null,
+    lastDeploySync: lastDeploySync.length > 0 ? (lastDeploySync[0] as any) : null,
   };
 }
 
 export default async function HomePage() {
-  const { projects, stale, activityCounts, lastSync } = await getHomeData();
+  const { projects, stale, activityCounts, lastSync, lastDeploySync } =
+    await getHomeData();
 
   return (
     <main className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
@@ -71,6 +83,7 @@ export default async function HomePage() {
             <Link href="/capture" className="text-sm text-white/60 hover:text-white transition-colors">Capture</Link>
             <Link href="/settings" className="text-sm text-white/60 hover:text-white transition-colors">Settings</Link>
             <GitHubSyncStatus lastSync={lastSync} />
+            <CloudflareDeployStatus lastSync={lastDeploySync} />
             <ProjectDialog
               mode="create"
               trigger={

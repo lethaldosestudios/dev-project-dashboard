@@ -1,4 +1,4 @@
-<!-- verified-against: fcd4e5a | verified: 2026-09-18 -->
+<!-- verified-against: 35dfe26 | verified: 2026-09-23 -->
 # Dev Project Dashboard
 
 > A self-hosted project command center. One screen that answers the only question that matters: **what needs my attention right now?**
@@ -35,6 +35,7 @@ mean three different things at once. Everything after Phase 3 is identified by n
 | — | **GitHub Sync** — repo linking, `repo_metadata`, real activity | ✅ Delivered 2026-09-13 |
 | — | **Hardening** — correctness & security fixes | ✅ Delivered 2026-09-16 |
 | — | **Feature parity** — notes edit/delete, tagging, project links | ✅ Delivered 2026-09-18 |
+| — | **Deploy sync** — Cloudflare Worker deployment status on the dashboard | ✅ Delivered 2026-09-23 |
 | — | **Polish** — visual & functional refinement | ⏳ Queued |
 | — | **AI Features** — product-facing AI | ⏳ Deferred, not committed |
 
@@ -76,6 +77,7 @@ What is actually implemented today.
   into `github_activity` (deduplicated by `external_id`), updating `last_activity_at`, and storing a
   display string in `repo_metadata` (e.g. `⭐ 42 · 🐛 3 · TypeScript`). Each run is recorded in
   `sync_runs` and reports how many events were added versus already known.
+- **Deploy sync** — fetches the latest Cloudflare Worker deployments for this app via the Cloudflare API (`src/lib/cloudflare.ts`), deduplicated by `deployment_id` into the `deployments` table, and records each run in `sync_runs`. The dashboard shows the last sync.
 - **Design language** — OLED-black base with a glass/glow system. See [`DESIGN.md`](./DESIGN.md).
 
 ---
@@ -197,10 +199,11 @@ pnpm dlx wrangler d1 execute dev-project-dashboard-db --local --file=./db/schema
 ### 4. Configure environment
 
 Copy [`.env.example`](./.env.example) → `.env` and
-[`.dev.vars.example`](./.dev.vars.example) → `.dev.vars`, then fill in `GITHUB_TOKEN`.
+[`.dev.vars.example`](./.dev.vars.example) → `.dev.vars`, then fill in `GITHUB_TOKEN` (and, for deploy sync, `CF_API_TOKEN` and `CF_ACCOUNT_ID` in `.dev.vars`).
 
 Authentication in production is handled by Cloudflare Access, so no application password is
-required. Locally, `requireAuth()` bypasses the check whenever `NODE_ENV !== 'production'`.
+required. Locally, Access does not run, so `requireAuth()` bypasses the check only when
+`DEV_AUTH_BYPASS=true` is set in `.dev.vars` (gitignored, never deployed).
 
 ### 5. Run locally
 
@@ -247,6 +250,7 @@ Every mutation route calls `requireAuth()`:
 - `POST /api/resources`, `PATCH`/`DELETE /api/resources/[id]`
 - `POST /api/capture`
 - `POST`/`GET /api/sync/github`
+- `POST`/`GET /api/sync/deploys`
 
 Read endpoints (list, detail, search) are left open by design: this is a single-user app, and the
 boundary that matters is public-internet-vs-authenticated. `pnpm docs:check` enforces this list —
@@ -263,6 +267,22 @@ endpoint directly.
 The token is read from the `x-github-token` request header if present, falling back to the
 `GITHUB_TOKEN` Cloudflare secret (`wrangler secret put GITHUB_TOKEN`) or `.dev.vars` locally.
 
+## Deploy sync
+
+Deploy sync pulls the latest Cloudflare Worker deployments for this app via the Cloudflare API
+(`src/lib/cloudflare.ts`) and shows them on the dashboard. The Cloudflare credentials are Worker
+secrets/vars (not in `.env.example`):
+
+- `CF_API_TOKEN` — API token with **Account → Workers Scripts → Read** access for your account; set
+  via `wrangler secret put CF_API_TOKEN` (prod) or `.dev.vars` (local).
+- `CF_ACCOUNT_ID` — your Cloudflare account id; a non-secret var in `wrangler.jsonc`.
+- `CF_SCRIPT_NAME` — the Worker script name (defaults to `dev-project-dashboard`).
+
+As with GitHub sync, the token may also be passed per-request via the `x-cf-token` header. Click
+**Sync Cloudflare Deploys** on the dashboard, or call `POST /api/sync/deploys` directly. Each run is
+recorded in `sync_runs` (`sync_type = 'deploys'`); deployment rows are deduplicated by
+`deployment_id`.
+
 ---
 
 ## Known limitations
@@ -272,6 +292,8 @@ The token is read from the `x-github-token` request header if present, falling b
   a numeric suffix (`my-project`, `my-project-2`, …).
 - **GitHub sync caps repo discovery at 1000 repos** (10 pages of 100) and performs no rate-limit
   backoff. It still issues one events request per linked repo.
+- **Deploy sync caps stored deployments at 30 per run** (`MAX_DEPLOYMENTS` in `src/lib/cloudflare.ts`)
+  and performs no rate-limit backoff. It issues a single list-deployments request per sync.
 - **URL normalization applies at write time only.** Resources captured before tracking parameters
   were stripped keep their stored `normalized_url`, so historical near-duplicates are not merged.
 

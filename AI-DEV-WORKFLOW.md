@@ -1,4 +1,4 @@
-<!-- verified-against: fcd4e5a | verified: 2026-09-18 -->
+<!-- verified-against: 35dfe26 | verified: 2026-09-23 -->
 # AI Development Workflow
 
 **Project:** `dev-project-dashboard`

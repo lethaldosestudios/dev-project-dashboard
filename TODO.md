@@ -1,4 +1,4 @@
-<!-- verified-against: fcd4e5a | verified: 2026-09-18 -->
+<!-- verified-against: 35dfe26 | verified: 2026-09-23 -->
 # TODO — Open Issues & Deferred Work
 
 This file is **forward-looking only**. It lists what is open, broken, or deferred. It contains no
@@ -30,9 +30,9 @@ Product-facing AI capabilities. **Not committed work.** Explicitly separate from
 *development* workflow in [`AI-DEV-WORKFLOW.md`](./AI-DEV-WORKFLOW.md), which is a dev-time aid only
 and never ships into the app.
 
-### Deploy sync
-Vercel/Cloudflare deploy widgets. Not started — the no-op placeholder route was removed on
-2026-09-16, so there is no stub to build on.
+### Vercel deploy widgets
+Cloudflare deploy sync is implemented (`src/app/api/sync/deploys/route.ts` + `src/lib/cloudflare.ts`
+with a dashboard widget); Vercel would follow the same pattern. Not started.
 
 ---
 

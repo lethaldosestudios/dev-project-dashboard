@@ -1,4 +1,4 @@
-<!-- verified-against: fcd4e5a | verified: 2026-09-18 -->
+<!-- verified-against: 35dfe26 | verified: 2026-09-23 -->
 # Changelog
 
 **This file is a historical record only.** It describes what changed and when. It is
@@ -10,6 +10,21 @@ documents that contradicted the code and each other. Git history remains the aut
 archive; this file is the readable summary.
 
 Entries are newest-first, one line per meaningful change, dated by commit.
+
+---
+
+## 2026-09-23
+- Delivered **Deploy sync** (Cloudflare): `POST`/`GET /api/sync/deploys` fetches this Worker's recent
+  deployments from the Cloudflare API via `src/lib/cloudflare.ts` and dedupes them by `deployment_id`
+  into a new `deployments` table (`db/migrations/0004_add_deployments.sql`, mirrored in `db/schema.sql`),
+  recording each run in `sync_runs` (`sync_type='deploys'`).
+- Added the `CloudflareDeployStatus` dashboard widget (`src/components/cloudflare-deploy-status.tsx`)
+  and wired it into `src/app/page.tsx` next to `GitHubSyncStatus`.
+- Cloudflare credentials resolve the same way as GitHub's: `x-cf-token` header → `CF_API_TOKEN` Worker
+  secret, paired with `CF_ACCOUNT_ID`/`CF_SCRIPT_NAME` vars in `wrangler.jsonc` (documented in
+  `.dev.vars.example`). Both deploy-sync handlers are guarded with `requireAuth()`.
+- Reimplemented `/api/sync/deploys` as a real Cloudflare deploy sync, replacing the no-op placeholder
+  deleted in 2026-09-16; the `docs:check` auth exemption allowlist stays empty.
 
 ---
 

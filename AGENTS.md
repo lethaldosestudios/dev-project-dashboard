@@ -1,4 +1,4 @@
-<!-- verified-against: fcd4e5a | verified: 2026-09-18 -->
+<!-- verified-against: 35dfe26 | verified: 2026-09-23 -->
 # AGENTS.md
 
 How AI agents should work in this repository. Read this before reviewing a PR or writing code.
@@ -91,8 +91,11 @@ These make claims about the **current** state and must stay true:
   `try/catch`.
 - **Response shape:** API routes return `{ error }` on failure and `{ ok: true, ... }` (or a direct
   resource payload) on success, with appropriate HTTP status codes.
-- **Secrets:** `GITHUB_TOKEN` is the only environment variable the app reads, so it is the only one
-  that belongs in `.env.example`. Never add a secret's real value, and never add a variable the code
+- **Secrets:** the app reads Worker env via the Cloudflare context: `GITHUB_TOKEN` (GitHub sync) and
+  `CF_API_TOKEN` (deploy sync, `src/app/api/sync/deploys/route.ts`), each paired with the
+  non-secret `CF_ACCOUNT_ID` / `CF_SCRIPT_NAME` vars in `wrangler.jsonc`. Only `GITHUB_TOKEN`
+  belongs in `.env.example` — the Cloudflare secret is set via `wrangler secret put` and mirrored
+  locally in `.dev.vars` (gitignored), so never commit a real value. Never add a variable the code
   does not read. `scripts/docs-check.mjs` enforces both.
 - **Schema changes:** Any edit to `db/schema.sql` must have a matching, numbered file in
   `db/migrations/`, and the two must not diverge. `scripts/docs-check.mjs` verifies every migrated

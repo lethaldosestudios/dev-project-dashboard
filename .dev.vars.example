@@ -1,5 +1,10 @@
 GITHUB_TOKEN=ghp_your_token_here
 
+# Cloudflare deploy sync (POST /api/sync/deploys). CF_API_TOKEN is a Worker secret in prod
+# (wrangler secret put CF_API_TOKEN); CF_ACCOUNT_ID and CF_SCRIPT_NAME are vars in wrangler.jsonc.
+CF_API_TOKEN=your_cf_api_token_here
+CF_ACCOUNT_ID=your_account_id_here
+
 # Local development only. Cloudflare Access does not run locally, so every mutation route would
 # return 401 without this. .dev.vars is gitignored and never deployed — never set this in a
 # production Worker configuration.

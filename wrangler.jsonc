@@ -16,6 +16,8 @@
     }
   ],
   "vars": {
-    "ENVIRONMENT": "production"
+    "ENVIRONMENT": "production",
+    "CF_ACCOUNT_ID": "your_account_id_here",
+    "CF_SCRIPT_NAME": "dev-project-dashboard"
   }
 }
