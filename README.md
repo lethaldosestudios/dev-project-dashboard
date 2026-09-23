@@ -233,9 +233,9 @@ Development server: `http://localhost:3000`
 ### Auto-deploy
 
 Pushes to `main` automatically build, test, and deploy via
-[`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml). The workflow requires two
-GitHub secrets: `CF_API_TOKEN_DEPLOY` (a Cloudflare API token with `Account → Workers Scripts → Edit`
-and `Account → D1 → Edit`) and `CF_ACCOUNT_ID`.
+[`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml). The workflow requires one
+GitHub secret: `CF_API_TOKEN_DEPLOY` (a Cloudflare API token with `Account → Workers Scripts → Edit`
+and `Account → D1 → Edit`). The account ID is hardcoded in the workflow as a non-secret var.
 
 ---
 

@@ -49,14 +49,14 @@ jobs:
         run: |
           for f in db/migrations/*.sql; do
             echo "Applying migration: $f"
-            npx wrangler d1 execute dev-project-dashboard-db --file "$f"
+            npx wrangler d1 execute dev-project-dashboard-db --file "$f" --remote
           done
         env:
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN_DEPLOY }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN_DEPLOY }}
+          CLOUDFLARE_ACCOUNT_ID: 59edafc92da629afa7ed1a14d7b413a0
 
       - name: Deploy to Cloudflare Workers
         run: pnpm deploy
         env:
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN_DEPLOY }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN_DEPLOY }}
+          CLOUDFLARE_ACCOUNT_ID: 59edafc92da629afa7ed1a14d7b413a0
