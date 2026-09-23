@@ -1,4 +1,4 @@
-<!-- verified-against: 35dfe26 | verified: 2026-09-23 -->
+<!-- verified-against: e733c29 | verified: 2026-09-23 -->
 # TODO — Open Issues & Deferred Work
 
 This file is **forward-looking only**. It lists what is open, broken, or deferred. It contains no

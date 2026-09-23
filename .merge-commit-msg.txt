@@ -1,6 +1,0 @@
-Merge remote main (PR #11) onto deploy sync
-
-Integrates PR #11 (tag slug rename collision fix + project-link PATCH response
-fix) from remote main with the Cloudflare deploy sync feature.
-
-Co-authored-by: CommandCodeBot <noreply@commandcode.ai>
