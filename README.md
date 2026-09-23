@@ -1,4 +1,4 @@
-<!-- verified-against: e733c29 | verified: 2026-09-23 -->
+<!-- verified-against: a7e29e2 | verified: 2026-09-23 -->
 # Dev Project Dashboard
 
 > A self-hosted project command center. One screen that answers the only question that matters: **what needs my attention right now?**
