@@ -129,6 +129,7 @@ dev-project-dashboard/
 │   │       ├── capture/route.ts             # POST
 │   │       └── sync/
 │   │           └── github/route.ts          # POST, GET
+│   │           └── deploys/route.ts         # POST, GET
 │   ├── components/
 │   │   ├── ui/                     # glass-card, liquid-button, glow-input, header…
 │   │   ├── project-card.tsx
@@ -145,11 +146,13 @@ dev-project-dashboard/
 │   │   ├── attention-panel.tsx
 │   │   ├── github-sync-status.tsx
 │   │   ├── github-activity-feed.tsx
+│   │   ├── cloudflare-deploy-status.tsx
 │   │   └── bookmarklet-install.tsx
 │   ├── lib/
 │   │   ├── db.ts                   # D1 access + id/timestamp helpers
 │   │   ├── auth.ts                 # requireAuth()
 │   │   ├── github.ts               # GitHub REST client + transforms
+│   │   ├── cloudflare.ts           # Cloudflare REST client for deploy fetch
 │   │   ├── utils.ts                # URL/slug/GitHub-ref normalization
 │   │   ├── projects.ts             # uniqueProjectSlug()
 │   │   ├── resources.ts            # findDuplicateResource()
@@ -158,10 +161,11 @@ dev-project-dashboard/
 │   └── types/index.ts
 ├── db/
 │   ├── schema.sql
-│   └── migrations/                 # 0001_init, 0002_add_github_repo, 0003_add_repo_metadata
+│   └── migrations/                 # 0001_init, 0002_add_github_repo, 0003_add_repo_metadata, 0004_add_deployments
 ├── scripts/
 │   └── docs-check.mjs              # docs:check — keeps these docs honest
 ├── .github/workflows/ci-smoke.yml
+├── .github/workflows/deploy.yml
 └── wrangler.jsonc
 ```
 
@@ -226,6 +230,13 @@ Development server: `http://localhost:3000`
 | `pnpm test` | Jest suite |
 | `pnpm docs:check` | Verify documentation claims still match the code |
 
+### Auto-deploy
+
+Pushes to `main` automatically build, test, and deploy via
+[`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml). The workflow requires two
+GitHub secrets: `CF_API_TOKEN_DEPLOY` (a Cloudflare API token with `Account → Workers Scripts → Edit`
+and `Account → D1 → Edit`) and `CF_ACCOUNT_ID`.
+
 ---
 
 ## Authentication
@@ -239,6 +250,21 @@ Access does not run locally, so local development opts in explicitly by setting
 `DEV_AUTH_BYPASS=true` in [`.dev.vars.example`](./.dev.vars.example) (copied to `.dev.vars`). That
 file is gitignored and never deployed, so a production Worker cannot inherit the flag — and
 `requireAuth()` fails closed when the Cloudflare context is unavailable.
+
+### Setting up Cloudflare Access for production
+
+The deployed Worker (`https://dev-project-dashboard.<subdomain>.workers.dev`) is publicly reachable
+but returns 401 unless protected by Cloudflare Access. To set it up:
+
+1. Go to https://dash.teams.cloudflare.com → **Access** → **Applications** → **Add application**
+2. Choose **Self-hosted** → name it "Dev Project Dashboard"
+3. **Application domain:** enter the Worker's URL (e.g. `dev-project-dashboard.<subdomain>.workers.dev`)
+4. **Policies:** *Allow* → *Email* → enter your email address
+5. **Authentication:** add Google (or your preferred IdP)
+6. Click **Save and deploy**
+
+After setup, visiting the Worker URL redirects you through Access login, which injects the
+`Cf-Access-User-Email` header that `requireAuth()` checks.
 
 Every mutation route calls `requireAuth()`:
 

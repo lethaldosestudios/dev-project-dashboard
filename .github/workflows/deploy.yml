@@ -1,0 +1,62 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # docs:check verifies each state doc's verified-against stamp resolves to a real
+          # commit, so it needs full history rather than a shallow clone.
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Enable corepack and prepare pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+
+      - name: Approve pnpm build scripts (CI)
+        run: |
+          pnpm approve-builds --all || true
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify documentation
+        run: pnpm docs:check
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Run D1 migrations
+        run: |
+          for f in db/migrations/*.sql; do
+            echo "Applying migration: $f"
+            npx wrangler d1 execute dev-project-dashboard-db --file "$f"
+          done
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN_DEPLOY }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+
+      - name: Deploy to Cloudflare Workers
+        run: pnpm deploy
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN_DEPLOY }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
